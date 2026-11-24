@@ -2,15 +2,27 @@ widget "tablet-monitor" {
   page: 2
   order: 1
   size: 3x3
-  minSize: 3x3
-  meta { owl: 16; description: "Recent network rate, battery temperature and the CPU activity visible to the Linux guest." }
+  minSize: 2x2
+  meta { owl: 28; description: "Six live charts for CPU, memory, network, battery temperature and power." }
 
   strings {
-    en { title: "tablet"; cpu: "CPU · guest view"; battery: "battery" }
-    ru { title: "планшет"; cpu: "ЦП · из Linux"; battery: "батарея" }
+    en {
+      title: "tablet"; memory: "RAM"; rx: "↓ RX"; tx: "↑ TX"; temp: "battery °C"; power: "power"; files: "OWL files"
+      cpuScope: "CPU shows what this Linux guest sees. On H28 this is the launcher and its Linux processes."
+      gpuScope: "GPU load is unavailable to apps on this device."
+    }
+    ru {
+      title: "планшет"; memory: "ОЗУ"; rx: "↓ приём"; tx: "↑ отправка"; temp: "АКБ °C"; power: "мощность"; files: "файлы OWL"
+      cpuScope: "ЦП показывает нагрузку, видимую из Linux. На H28 это лаунчер и его Linux-процессы."
+      gpuScope: "Загрузка GPU недоступна приложениям на этом планшете."
+    }
   }
 
+  onTap: screen()
+
   source battery = android.battery
+  source power = android.power every 5s
+  source system = android.system every 5s
   source net = android.network every 5s
   source cpu = cmd("head -n 1 /proc/stat") every 5s optional
   state down = null
@@ -26,22 +38,90 @@ widget "tablet-monitor" {
   on cpu {
     let a = words(old)
     let b = words(value)
-    let busy = num(b[1]) + num(b[2]) + num(b[3]) - num(a[1]) - num(a[2]) - num(a[3])
+    // IRQ, soft IRQ and steal are busy; guest ticks are already included in user and nice.
+    let busy = num(b[1]) + num(b[2]) + num(b[3]) + num(b[6]) + num(b[7]) + num(b[8]) -
+               num(a[1]) - num(a[2]) - num(a[3]) - num(a[6]) - num(a[7]) - num(a[8])
     let idle = num(b[4]) + num(b[5]) - num(a[4]) - num(a[5])
     usage = a[0] == "cpu" && b[0] == "cpu" && busy >= 0 && idle >= 0 && busy + idle > 0 ? 100 * busy / (busy + idle) : null
   }
 
-  let cpuHistory = history(usage, 24)
-  let netHistory = history(down, 24)
+  let ram = system.memory.total > 0 ? 100 * system.memory.used / system.memory.total : null
+  let watts = power.watts == null ? null : abs(power.watts)
+  let cpuHistory = history(linux ? usage : null, 40)
+  let ramHistory = history(ram, 40)
+  let downHistory = history(down, 40)
+  let upHistory = history(up, 40)
+  let tempHistory = history(battery.temp, 40)
+  let powerHistory = history(watts, 40)
+  let dense = (tileWidth ?? 250) < 195 || (tileHeight ?? 240) < 200
+  let gapSize = dense ? 3 : 5
+
+  component Metric(label, reading, points, floor, ceiling, tint) {
+    Column {
+      weight: 1
+      fill: height
+      gap: 1
+      padding: dense ? 3 : 5
+      background: linear(0, 0, 0, 1, [alpha(surface, 0.80), alpha(background, 0.80)])
+      border: 1
+      borderColor: alpha(tint, 0.32)
+      radius: 4 * corners
+      clip: true
+
+      Row {
+        gap: 3
+        align: center
+        Text { text: label; color: muted; weight: 1; fontSize: dense ? 9 : 11; maxLines: 1 }
+        Text { text: reading; color: tint; bold: true; fontSize: dense ? 10 : 13; maxLines: 1 }
+      }
+
+      Box {
+        fill: width
+        weight: 1
+        Canvas {
+          for i in range(3) {
+            let y = (i + 1) * height / 4
+            line(0, y, width, y, stroke: alpha(tint, 0.16))
+          }
+        }
+        Sparkline { values: points; min: floor; max: ceiling; color: tint; area: alpha(tint, 0.18); thickness: 1.4; fill: true }
+      }
+    }
+  }
 
   Column {
     fill: true
-    gap: 4
-    Text { text: str.title; style: muted; maxLines: 1 }
-    Text { text: str.cpu + " · " + (!linux || usage == null ? "—" : "${round(usage)}%"); style: small; maxLines: 1 }
-    Sparkline { values: linux ? cpuHistory : []; min: 0; max: 100; area: true; color: accent; fill: width; weight: 1 }
-    Text { text: "↓ " + (down == null ? "—" : fmtBytes(down) + "/s") + "   ↑ " + (up == null ? "—" : fmtBytes(up) + "/s"); style: small; maxLines: 1 }
-    Sparkline { values: netHistory; min: 0; area: true; color: cyan; fill: width; weight: 1 }
-    Text { text: str.battery + " · " + (battery.temp == null ? "—" : "${battery.temp} °C"); style: small; maxLines: 1 }
+    gap: gapSize
+    Row {
+      fill: width
+      weight: 1
+      gap: gapSize
+      Metric { label: "CPU"; reading: !linux || usage == null ? "—" : "${round(usage)}%"; points: cpuHistory; floor: 0; ceiling: 100; tint: accent }
+      Metric { label: str.memory; reading: ram == null ? "—" : "${round(ram)}%"; points: ramHistory; floor: 0; ceiling: 100; tint: purple }
+    }
+    Row {
+      fill: width
+      weight: 1
+      gap: gapSize
+      Metric { label: str.rx; reading: down == null ? "—" : fmtBytes(down) + "/s"; points: downHistory; floor: 0; ceiling: null; tint: cyan }
+      Metric { label: str.tx; reading: up == null ? "—" : fmtBytes(up) + "/s"; points: upHistory; floor: 0; ceiling: null; tint: blue }
+    }
+    Row {
+      fill: width
+      weight: 1
+      gap: gapSize
+      Metric { label: str.temp; reading: battery.temp == null ? "—" : fixed(battery.temp, 1) + "°"; points: tempHistory; floor: 15; ceiling: 55; tint: orange }
+      Metric { label: str.power; reading: watts == null ? "—" : (battery.charging ? "+" : "−") + fixed(watts, 1) + " W"; points: powerHistory; floor: 0; ceiling: null; tint: green }
+    }
+  }
+
+  screen {
+    title: str.title
+    Column {
+      gap: 10
+      Text { text: str.cpuScope; style: small }
+      Text { text: str.gpuScope; style: small }
+      Button { text: str.files; onTap: launcher("widgets") }
+    }
   }
 }

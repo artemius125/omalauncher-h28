@@ -1,21 +1,30 @@
 widget "linux-session" {
   page: 1
   order: 4
-  size: 2x2
-  minSize: 2x2
-  meta { owl: 28; description: "Start or stop the Linux session, or edit OWL files in Oma Files." }
+  size: 1x1
+  minSize: 1x1
+  meta { owl: 28; description: "Start or stop the Linux session." }
 
-  strings {
-    en { running: "running"; stopped: "inactive"; files: "OWL files" }
-    ru { running: "работает"; stopped: "неактивен"; files: "файлы OWL" }
-  }
+  onTap: launcher("linux:session")
 
-  Column {
+  Canvas {
     fill: true
-    justify: center
-    gap: 4
-    Text { text: linux ? "● Linux" : "○ Linux"; color: linux ? green : foreground; style: title; maxLines: 1; onTap: launcher("linux:session") }
-    Text { text: str[linux ? "running" : "stopped"]; style: small; maxLines: 1; onTap: launcher("linux:session") }
-    Button { text: str.files; onTap: launcher("widgets") }
+    let x = width / 2
+    let y = height / 2
+    let r = min(34, min(width, height) * 0.42)
+    let icon = r * 0.43
+    let rim = linux ? green : muted
+    circle(x, y + 2, r, fill: alpha(foreground, 0.22))
+    circle(x, y + 1, r, fill: background)
+    circle(x, y, r - 1, stroke: alpha(rim, linux ? 0.80 : 0.40), width: 1.5)
+    circle(x, y, r - 3, fill: radial(0.38, 0.28, 0.52, [alpha(surface, 0.95), background]))
+    arc(x, y, r - 4, 285, 145, stroke: alpha(foreground, 0.14), width: 1.4, cap: round)
+    if linux {
+      circle(x, y, icon, stroke: red, width: 2.5)
+      line(x - icon * 0.70, y + icon * 0.70, x + icon * 0.70, y - icon * 0.70, stroke: red, width: 2.5, cap: round)
+    } else {
+      arc(x, y, icon, 42, 276, stroke: green, width: 2.5, cap: round)
+      line(x, y - icon * 1.16, x, y - icon * 0.14, stroke: green, width: 2.5, cap: round)
+    }
   }
 }

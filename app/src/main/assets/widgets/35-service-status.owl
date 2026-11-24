@@ -1,14 +1,16 @@
 widget "service-status" {
   page: 2
   order: 2
-  size: 3x3
-  minSize: 3x2
+  size: 2x2
+  minSize: 2x2
   meta { owl: 16; description: "Check up to three HTTPS health endpoints from Android. Tap the tile to configure them." }
 
   strings {
     en { title: "Mac mini"; set: "add HTTPS addresses"; check: "check now"; pending: "checking…"; failed: "connection failed"; invalid: "use an HTTPS URL" }
     ru { title: "Mac mini"; set: "добавить HTTPS-адреса"; check: "проверить сейчас"; pending: "проверка…"; failed: "нет соединения"; invalid: "нужен URL с HTTPS" }
   }
+
+  onTap: screen()
 
   state firstUrl = "" persist
   state secondUrl = "" persist
@@ -36,13 +38,24 @@ widget "service-status" {
   Column {
     fill: true
     gap: 5
-    Text { text: str.title; style: muted }
+    Text { text: str.title; style: muted; maxLines: 1 }
     if len(configured) == 0 {
-      Text { text: str.set; style: small; color: accent; maxLines: 2 }
-    }
-    for i in range(3) key i {
-      if endpoints[i] != "" {
-        CheckRow { target: endpoints[i]; result: results[i]; slot: i + 1 }
+      Box {
+        weight: 1
+        fill: width
+        align: center
+        Button { text: str.set; onTap: screen() }
+      }
+    } else {
+      Column {
+        fill: width
+        weight: 1
+        justify: spaceEvenly
+        for i in range(3) key i {
+          if endpoints[i] != "" {
+            CheckRow { target: endpoints[i]; result: results[i]; slot: i + 1 }
+          }
+        }
       }
     }
   }
