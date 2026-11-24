@@ -126,7 +126,7 @@ widget "tablet-monitor" {
 
   component Network(detail) {
     Column {
-      weight: 1
+      weight: detail ? 0 : 1
       fill: detail ? "width" : "height"
       gap: 2
       padding: detail ? 10 : dense ? 3 : 5
@@ -156,7 +156,7 @@ widget "tablet-monitor" {
   component BatteryHistory(detail) {
     let tint = battery.charging ? green : accent
     Column {
-      weight: 1
+      weight: detail ? 0 : 1
       fill: detail ? "width" : "height"
       gap: 2
       padding: detail ? 10 : dense ? 3 : 5
