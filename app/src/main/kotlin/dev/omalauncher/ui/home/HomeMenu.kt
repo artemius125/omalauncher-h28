@@ -124,6 +124,12 @@ fun HomeMenu(
                 state.show()
             }
         }
+        if (runtime.recentTasks.supported) {
+            MenuItem(stringResource(R.string.oma_recent)) {
+                state.homeMenuOpen = false
+                state.onRecentApps()
+            }
+        }
         MenuItem(stringResource(R.string.home_browse_store)) {
             state.homeMenuOpen = false
             state.show(SettingsPage.Store)

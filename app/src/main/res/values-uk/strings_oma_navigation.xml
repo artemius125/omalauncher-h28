@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="oma_navigation">Жести OMA</string>
+    <string name="oma_navigation_description">Торкніться смужки OMA або проведіть угору, щоб повернутися на головний екран. Проведіть угору й затримайте палець, щоб побачити відкриті застосунки. OMA не зчитує вміст вікон.</string>
+    <string name="oma_recent">Недавні застосунки</string>
+    <string name="oma_home">Додому</string>
+    <string name="oma_close_app">Закрити застосунок</string>
+    <string name="oma_tasks_empty">Немає відкритих вікон під керуванням OMA</string>
+    <string name="oma_task_unavailable">Вікно застосунку вже недоступне</string>
+</resources>

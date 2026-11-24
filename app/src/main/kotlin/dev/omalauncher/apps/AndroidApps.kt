@@ -184,6 +184,7 @@ fun pinnedIds(
  */
 class AndroidAppCatalog(
     private val context: Context,
+    private val openManaged: (ComponentName) -> Boolean = { false },
 ) {
     val apps = mutableStateListOf<AndroidApp>()
 
@@ -344,6 +345,7 @@ class AndroidAppCatalog(
         // Uninstalled or disabled since the list was loaded.
         runCatching {
             if (user == Process.myUserHandle()) {
+                if (openManaged(component)) return
                 // As Launcher3 does for its own profile; only an intent can ask for no open-an-app animation.
                 context.startActivity(
                     Intent(Intent.ACTION_MAIN)

@@ -7,6 +7,12 @@ import android.content.Intent
 import android.content.Context
 import android.os.Bundle
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.repeatOnLifecycle
+import dev.omalauncher.navigation.RecentOverview
+import dev.omalauncher.ui.Palette
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.derivedStateOf
 import android.util.Log
@@ -24,7 +30,6 @@ import androidx.compose.runtime.snapshotFlow
 import dev.omalauncher.ui.BrowserPages
 import dev.omalauncher.ui.ImagePicker
 import dev.omalauncher.ui.WidgetAsks
-import dev.omalauncher.ui.Palette
 import dev.omalauncher.theme.Style
 import dev.omalauncher.ui.KeyIndicated
 import dev.omalauncher.ui.keyPressed
@@ -49,6 +54,11 @@ class MainActivity : ComponentActivity() {
     private val state = LauncherState()
     private val imagePicker = ImagePicker(this) { runtime }
     private val asks = WidgetAsks(this)
+    private var overview by mutableStateOf(false)
+
+    companion object {
+        const val SHOW_OMA_RECENTS = "dev.omalauncher.showRecentApps"
+    }
 
     /** In the language picked in settings. */
     override fun attachBaseContext(newBase: Context) {
@@ -66,9 +76,17 @@ class MainActivity : ComponentActivity() {
         }
         applySystemBars(this, Palette.isLight)
         runtime.start()
+        lifecycleScope.launch {
+            repeatOnLifecycle(Lifecycle.State.STARTED) { runtime.recentTasks.whileHomeVisible() }
+        }
+        overview = runtime.recentTasks.supported && intent.getBooleanExtra(SHOW_OMA_RECENTS, false)
+        state.onRecentApps = { overview = true }
         state.onSettings = { page, homePage -> runtime.openSettings(page, homePage) }
         setContent {
-            KeyIndicated { LauncherRoot(runtime, state) }
+            KeyIndicated {
+                if (overview && runtime.launcherReady) RecentOverview(runtime) { overview = false }
+                else LauncherRoot(runtime, state)
+            }
             SystemBarsEffect(this@MainActivity)
             // A face whose statusBar is false takes the status bar's room too.
             val fullScreen by remember { derivedStateOf { state.fullScreen && runtime.widgets.openScreen == null } }
@@ -169,7 +187,11 @@ class MainActivity : ComponentActivity() {
      */
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
-        val nothingOpen =
+        val wasOverview = overview
+        if (intent.hasCategory(Intent.CATEGORY_HOME)) {
+            overview = runtime.recentTasks.supported && intent.getBooleanExtra(SHOW_OMA_RECENTS, false)
+        }
+        val nothingOpen = !wasOverview && !overview &&
             state.drawer.value == 0f && state.pulled == null && !state.homeMenuOpen && state.shared == null &&
                 state.sharing == null && runtime.widgets.openScreen == null && state.editing == null
         if (!away && nothingOpen && intent.hasCategory(Intent.CATEGORY_HOME)) state.onHomeAgain()

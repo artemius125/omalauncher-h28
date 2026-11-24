@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="oma_navigation">Gestes OMA</string>
+    <string name="oma_navigation_description">Touchez la barre OMA ou balayez vers le haut pour revenir à l’accueil. Balayez puis maintenez pour voir les applications ouvertes. OMA ne lit pas les fenêtres.</string>
+    <string name="oma_recent">Applications récentes</string>
+    <string name="oma_home">Accueil</string>
+    <string name="oma_close_app">Fermer l’application</string>
+    <string name="oma_tasks_empty">Aucune application ouverte dans OMA</string>
+    <string name="oma_task_unavailable">La fenêtre est indisponible</string>
+</resources>

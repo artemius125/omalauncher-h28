@@ -69,3 +69,7 @@ its edge.
 `strip.owl` is the stock strip: the recent apps, the long-press menu with shortcuts, and both directions.
 `examples/strip-pinned` keeps apps in place first, sized to share the strip, with the recent ones after them; move it
 up into this folder as `strip.owl` to use it. `owl-check strip.owl` draws the strip above where the bar would be.
+
+On Android 11 with OMA gestures on, the stock strip shows a dot for each app whose task OMA manages. Its
+long-press menu adds **Close app** for that app. In custom strips, read `a.running` and pass `"close"` to
+`appAction` (owl 27). Use this action in a touch handler. For Linux, it sends the normal close request to the window.

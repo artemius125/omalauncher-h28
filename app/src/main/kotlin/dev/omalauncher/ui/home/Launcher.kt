@@ -59,6 +59,7 @@ import androidx.compose.ui.platform.LocalLayoutDirection
 import dev.omalauncher.linux.ComputerLink
 import dev.omalauncher.ui.settings.LinkComputerScreen
 import dev.omalauncher.Runtime
+import dev.omalauncher.navigation.OmaNavigationService
 import dev.omalauncher.theme.Style
 import dev.omalauncher.theme.StyleStore
 import dev.omalauncher.widgets.HomeStore
@@ -140,6 +141,7 @@ private fun DesktopScreen(
             }
         }
     }
+    val navigationRoom = if (runtime.recentTasks.gesturesEnabled) OmaNavigationService.HANDLE_HEIGHT_DP.dp else 0.dp
     // A face runs under them, so their bands make way for it.
     if (!state.faceShowing) SystemBarFrames()
     val covered = remember(state) { { state.homeCovered || runtime.widgets.openScreen != null } }
@@ -147,7 +149,7 @@ private fun DesktopScreen(
     val backdrop = remember(runtime, state) { Backdrop({ runtime.themes.background }, { state.wallpaperOffset }) }
     CompositionLocalProvider(LocalHomeCovered provides covered, LocalBackdrop provides backdrop) {
         // The whole window: a face fills it, and tiles keep clear of the system bars and the bar themselves.
-        HomeScreen(runtime, state, Modifier.fillMaxSize())
+        HomeScreen(runtime, state, Modifier.fillMaxSize().padding(bottom = navigationRoom))
     }
 
     // Only whether it shows is read here; the animation itself runs in the layer, without recomposing.
@@ -249,7 +251,7 @@ private fun DesktopScreen(
     if (side != null && !panelShown) {
         if (!runtime.terminals.typing) {
             CompositionLocalProvider(LocalBackdrop provides backdrop) {
-                SideRail(runtime, state, handlers, side, Modifier.fillMaxSize().graphicsLayer { translationX = state.barShift() * size.width }.safePadding().lockedTaps(locked))
+                SideRail(runtime, state, handlers, side, Modifier.fillMaxSize().graphicsLayer { translationX = state.barShift() * size.width }.safePadding().padding(bottom = navigationRoom).lockedTaps(locked))
             }
         }
     } else {
@@ -258,6 +260,7 @@ private fun DesktopScreen(
                 .fillMaxSize()
                 .safePadding()
                 .imePadding()
+                .padding(bottom = navigationRoom)
                 .then(if (side != null) Modifier.wrapContentWidth().widthIn(max = ReadingWidth) else Modifier),
         ) {
             Box(Modifier.weight(1f).fillMaxWidth()) {

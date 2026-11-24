@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="oma_navigation">Жесты OMA</string>
+    <string name="oma_navigation_description">Коснитесь ручки OMA или смахните вверх, чтобы вернуться домой. Смахните вверх и задержите палец, чтобы увидеть открытые приложения. Служба не читает содержимое окон.</string>
+    <string name="oma_recent">Недавние приложения</string>
+    <string name="oma_home">Домой</string>
+    <string name="oma_close_app">Закрыть приложение</string>
+    <string name="oma_tasks_empty">Нет открытых окон под управлением OMA</string>
+    <string name="oma_task_unavailable">Окно приложения уже недоступно</string>
+</resources>

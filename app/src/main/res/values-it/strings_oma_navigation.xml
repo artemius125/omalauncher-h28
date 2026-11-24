@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="oma_navigation">Gesti OMA</string>
+    <string name="oma_navigation_description">Tocca la barra OMA o scorri verso l’alto per tornare alla home. Scorri e tieni premuto per vedere le app aperte. OMA non legge le finestre delle app.</string>
+    <string name="oma_recent">App recenti</string>
+    <string name="oma_home">Home</string>
+    <string name="oma_close_app">Chiudi app</string>
+    <string name="oma_tasks_empty">Nessuna app aperta in OMA</string>
+    <string name="oma_task_unavailable">La finestra non è più disponibile</string>
+</resources>

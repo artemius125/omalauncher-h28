@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="oma_navigation">OMA ジェスチャー</string>
+    <string name="oma_navigation_description">OMA のバーをタップするか上にスワイプするとホームに戻ります。上にスワイプして長押しすると開いているアプリを表示します。OMA はアプリのウィンドウを読み取りません。</string>
+    <string name="oma_recent">最近のアプリ</string>
+    <string name="oma_home">ホーム</string>
+    <string name="oma_close_app">アプリを閉じる</string>
+    <string name="oma_tasks_empty">OMA で開いているアプリはありません</string>
+    <string name="oma_task_unavailable">アプリのウィンドウは利用できません</string>
+</resources>

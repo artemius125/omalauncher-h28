@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="oma_navigation">OMA-Gesten</string>
+    <string name="oma_navigation_description">Tippe auf den OMA-Griff oder wische nach oben, um zum Startbildschirm zu wechseln. Wische nach oben und halte, um offene Apps zu sehen. OMA liest keine App-Fenster.</string>
+    <string name="oma_recent">letzte apps</string>
+    <string name="oma_home">start</string>
+    <string name="oma_close_app">app schließen</string>
+    <string name="oma_tasks_empty">keine offenen apps unter OMA</string>
+    <string name="oma_task_unavailable">das app-fenster ist nicht mehr verfügbar</string>
+</resources>

@@ -55,6 +55,9 @@ import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.withTimeoutOrNull
 import java.io.File
+import dev.omalauncher.widgets.lang.Value
+import dev.omalauncher.widgets.lang.textOrNull
+import dev.omalauncher.widgets.runtime.Services
 
 /** A widget file, compiled. [program] is null when it doesn't compile; [error] says why. */
 class WidgetSpec(
@@ -130,6 +133,18 @@ class WidgetEngine(
     private val scope =
         CoroutineScope(SupervisorJob() + Dispatchers.Main + CoroutineExceptionHandler { _, e -> Log.e("widgets", "a widget's job failed", e) })
     private val services = WidgetServices(context, proot, runtime, scope)
+
+    private val stripServices = object : Services by services {
+        override fun act(name: String, args: List<Value>, done: () -> Unit) {
+            if (name == "appAction" && args.firstOrNull().textOrNull() == "close") {
+                val key = args.getOrNull(1).textOrNull()
+                if (key != null) services.closeRecent(key)
+                done()
+            } else {
+                services.act(name, args, done)
+            }
+        }
+    }
 
     /** Opens launcher screens ("style" or "themes", "agents", "store" or "store:apps", "drawer"); set by the UI. */
     var launcherAction by services::launcherAction
@@ -759,7 +774,7 @@ class WidgetEngine(
             val inst =
                 WidgetInstance(
                     program,
-                    services,
+                    if (program.kind == OwlKind.Strip) stripServices else services,
                     { message -> writeError(spec.file, message, append = true) },
                     File(stateDir, "$name.json"),
                     File(stateDir, "$name.secret"),

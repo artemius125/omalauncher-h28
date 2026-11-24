@@ -33,6 +33,8 @@ import android.os.UserManager
 import android.util.Log
 import android.widget.Toast
 import dev.omalauncher.R
+import dev.omalauncher.linux.matches
+import dev.omalauncher.navigation.OpenTask
 import dev.omalauncher.system.postNotification
 import dev.omalauncher.Runtime
 import dev.omalauncher.linux.Agent
@@ -541,8 +543,10 @@ class WidgetServices(
         )
 
     /** One app as `android.drawer` and `android.strip` list them; see [drawer]. */
-    private fun appValue(hit: AppHit): Value {
+    private fun appValue(hit: AppHit, inStrip: Boolean = false): Value {
         val dot = hit.hasDot
+        val running = inStrip && openTasksFor(hit).isNotEmpty()
+        val actions = hit.actionWords(voice = runtime.voice.canTalk) + if (running) listOf("close") else emptyList()
         return Obj(
             mapOf(
                 "key" to Str(hit.key),
@@ -550,6 +554,7 @@ class WidgetServices(
                 "name" to Str(hit.label),
                 "label" to Str(if (dot) context.getString(R.string.home_app_has_notifications, hit.spoken) else hit.spoken),
                 "dot" to bool(dot),
+                "running" to bool(running),
                 "icon" to Str("icon:" + hit.key),
                 // Its silhouette whether or not icons are monochrome, to tint any color (owl 24).
                 "mask" to Str("mask:" + hit.key),
@@ -560,7 +565,7 @@ class WidgetServices(
                 "hasIcon" to bool(appIconOf(runtime, hit.key, LauncherStyle.monochromeIcons) != null),
                 "initials" to Str(initials(hit.label)),
                 // Voice's only with someone to talk to and a way to hear the user (owl 26).
-                "actions" to Lst(hit.actionWords(voice = runtime.voice.canTalk).map(::Str)),
+                "actions" to Lst(actions.map(::Str)),
                 "score" to Num(Math.round(runtime.usage.score(hit.key) * 10.0) / 10.0),
                 "last" to (runtime.usage.last(hit.key)?.let { Num((it / 1000).toDouble()) } ?: Null),
             ),
@@ -579,7 +584,7 @@ class WidgetServices(
         val apps = if (runtime.appsListed) recentApps(runtime, STRIP_APPS) else emptyList()
         return Obj(
             mapOf(
-                "apps" to Lst(apps.map(::appValue)),
+                "apps" to Lst(apps.map { appValue(it, inStrip = true) }),
                 "vertical" to bool(runtime.widgets.stripVertical),
                 "monochrome" to bool(LauncherStyle.monochromeIcons),
                 "bare" to bool(LauncherStyle.bareAppIcons),
@@ -607,7 +612,7 @@ class WidgetServices(
             runtime.widgets.apps().sortedBy { it.name.lowercase() }.map { AppHit.Owl(it) } + runtime.linuxApps.apps.map { AppHit.Linux(it) } +
                 apps.shortcuts.filter { !it.work }.map { AppHit.Shortcut(it) } + apps.apps.filter { !it.work }.map { AppHit.Android(it) } +
                 apps.shortcuts.filter { it.work }.map { AppHit.Shortcut(it) } + apps.apps.filter { it.work }.map { AppHit.Android(it) }
-        val list = hits.take(Builtins.MAX_LIST).map(::appValue)
+        val list = hits.take(Builtins.MAX_LIST).map { appValue(it) }
         val work = if (apps.workProfiles.isEmpty()) Null else Obj(mapOf("paused" to bool(apps.workProfiles.any { apps.paused(it) })))
         return Obj(mapOf("apps" to Lst(list), "linux" to Str(linuxWord(runtime.bootstrap.state.value)), "monochrome" to bool(LauncherStyle.monochromeIcons), "work" to work, "updates" to Num((runtime.updates.pending?.count ?: 0).toDouble())))
     }
@@ -1022,6 +1027,24 @@ class WidgetServices(
             LinuxState.Installed -> "installed"
             is LinuxState.Installing -> "installing"
             else -> "missing"
+        }
+
+    internal fun closeRecent(key: String) {
+        val hit = recentApps(runtime, STRIP_APPS).firstOrNull { it.key == key } ?: return
+        runtime.recentTasks.close(openTasksFor(hit))
+    }
+
+    private fun openTasksFor(hit: AppHit): List<OpenTask> =
+        runtime.recentTasks.tasks.filter { task ->
+            when (hit) {
+                is AppHit.Android -> hit.app.profile == null && task.component == hit.app.component
+                is AppHit.Owl -> task.owl == hit.spec.file.name
+                is AppHit.Linux -> runtime.wm.windowByHandle(task.window)?.let { window ->
+                    (window.appId.isNotEmpty() && hit.app.matches(window.appId)) ||
+                        runtime.displayName(window.appId, window.title).equals(hit.app.name, ignoreCase = true)
+                } == true
+                is AppHit.Shortcut -> false
+            }
         }
 
     /** The drawer's app with [key], as `android.drawer` and `android.recent` give it, or an `android.apps` key. */

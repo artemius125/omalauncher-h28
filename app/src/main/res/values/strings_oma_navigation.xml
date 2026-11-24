@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="oma_navigation">OMA gestures</string>
+    <string name="oma_navigation_description">Tap or swipe up on the OMA handle to go home. Swipe up and hold to see open apps. OMA gestures do not read app windows.</string>
+    <string name="oma_recent">Recent apps</string>
+    <string name="oma_home">Home</string>
+    <string name="oma_close_app">Close app</string>
+    <string name="oma_tasks_empty">No open apps managed by OMA</string>
+    <string name="oma_task_unavailable">The app window is no longer available</string>
+</resources>

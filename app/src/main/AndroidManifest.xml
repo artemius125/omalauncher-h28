@@ -100,6 +100,25 @@
             </intent-filter>
         </activity>
 
+        <activity
+            android:name=".navigation.ManagedAppActivity"
+            android:documentLaunchMode="intoExisting"
+            android:exported="false"
+            android:theme="@style/Theme.OmaManagedApp" />
+
+        <service
+            android:name=".navigation.OmaNavigationService"
+            android:exported="true"
+            android:label="@string/oma_navigation"
+            android:permission="android.permission.BIND_ACCESSIBILITY_SERVICE">
+            <intent-filter>
+                <action android:name="android.accessibilityservice.AccessibilityService" />
+            </intent-filter>
+            <meta-data
+                android:name="android.accessibilityservice"
+                android:resource="@xml/oma_navigation_service" />
+        </service>
+
         <!-- Opens a speech app's "speak now" screen for Speech and hands the words back; shows nothing itself. -->
         <activity
             android:name=".SpeakNowActivity"

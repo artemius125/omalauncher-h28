@@ -611,6 +611,7 @@ class WidgetInstance(
         if ((name == "pressKey" || name == "typeText" || name == "latch") && inTrigger && !byDictation) {
             return report("$name(...) works in handlers like onPress, or in on said.final for what android.speech heard, not in another trigger")
         }
+        if (name == "appAction" && key == "close" && inTrigger) return report("appAction(\"close\") works in a touch handler, not in a trigger")
         if (name == "pickImages" && inTrigger) return report("pickImages() works in onTap, not in a trigger")
         // A permission dialog, like the microphone's, only for a touch.
         if (name in ASKS && key == "request" && inTrigger) return report("$name(\"request\") works in onTap, not in a trigger")

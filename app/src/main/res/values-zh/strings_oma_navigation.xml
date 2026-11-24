@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="oma_navigation">OMA 手势</string>
+    <string name="oma_navigation_description">轻点 OMA 手柄或向上滑动即可返回主屏幕。向上滑动后停留可查看打开的应用。OMA 不读取应用窗口。</string>
+    <string name="oma_recent">最近使用的应用</string>
+    <string name="oma_home">主屏幕</string>
+    <string name="oma_close_app">关闭应用</string>
+    <string name="oma_tasks_empty">OMA 没有管理任何打开的应用</string>
+    <string name="oma_task_unavailable">该应用窗口已不可用</string>
+</resources>

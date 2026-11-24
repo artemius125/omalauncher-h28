@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="oma_navigation">Gestur OMA</string>
+    <string name="oma_navigation_description">Ketuk atau usap pegangan OMA ke atas untuk kembali ke layar utama. Usap ke atas dan tahan untuk melihat aplikasi terbuka. OMA tidak membaca jendela aplikasi.</string>
+    <string name="oma_recent">Aplikasi terbaru</string>
+    <string name="oma_home">Layar utama</string>
+    <string name="oma_close_app">Tutup aplikasi</string>
+    <string name="oma_tasks_empty">Tidak ada aplikasi terbuka di OMA</string>
+    <string name="oma_task_unavailable">Jendela aplikasi tidak lagi tersedia</string>
+</resources>

@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="oma_navigation">OMA hareketleri</string>
+    <string name="oma_navigation_description">Ana ekrana dönmek için OMA çubuğuna dokun veya yukarı kaydır. Açık uygulamaları görmek için yukarı kaydırıp bekle. OMA uygulama pencerelerini okumaz.</string>
+    <string name="oma_recent">Son uygulamalar</string>
+    <string name="oma_home">Ana ekran</string>
+    <string name="oma_close_app">Uygulamayı kapat</string>
+    <string name="oma_tasks_empty">OMA tarafından yönetilen açık uygulama yok</string>
+    <string name="oma_task_unavailable">Uygulama penceresi artık kullanılamıyor</string>
+</resources>

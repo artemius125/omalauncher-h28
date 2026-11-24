@@ -5,7 +5,39 @@ optional Arch Linux ARM system next to your phone apps. Omalauncher runs the
 system under proot, without root, and is its Wayland compositor: every Linux
 window opens as its own Android task, with its own card in Recents.
 
-<a href="https://play.google.com/store/apps/details?id=dev.omalauncher"><img src="https://play.google.com/intl/en_us/badges/static/images/badges/en_badge_web_generic.png" alt="Get it on Google Play" height="80"></a>
+## What this fork adds
+
+This Android 11 navigation fork is based on Simon Schubert’s
+[Omalauncher 1.10.0](https://github.com/SimonSchubert/omalauncher/tree/v1.10.0).
+Its home and overview gestures use Omalauncher’s own accessibility service and
+work without Launcher3’s Quickstep, root, or Shizuku.
+
+- **Home and Recents.** Tap the bottom handle or swipe up to go home. Hold it
+  or swipe up and hold to open Omalauncher’s own Recents. With gesture
+  navigation enabled, Omalauncher uses the existing Android handle when
+  available and draws a fallback handle otherwise.
+- **Close from Recents or the home screen.** In Recents, tap a card to reopen it,
+  or swipe the card up to close it. You can also use **Close app** in Recents
+  or long-press a running app’s icon in the home screen’s recent-app strip to
+  find the same action. Omalauncher closes it immediately after you select it.
+  A small dot below the icon indicates an open app managed by Omalauncher.
+- **Linux and OWL apps.** The same controls cover Linux windows and OWL apps.
+  Closing a Linux window sends a standard Wayland close request to that window,
+  leaving the Linux session available. A Linux app can still ask you to save
+  unsaved work.
+
+To try these features on Android 11, set Omalauncher as the default home app
+and enable **OMA gestures** in Android’s Accessibility settings. The service
+does not read app window contents. The custom Recents covers tasks owned by
+Omalauncher, including compatible Android apps launched from it. Apps that
+open their own Android tasks, including some opened from notifications, may be
+absent. Home gestures and app closing were tested in portrait on a DEXP H28
+with Android 11, using Material Files and a Linux Terminal window.
+
+[Build this fork from source](#building). The Google Play listing below is for
+the original Omalauncher.
+
+<a href="https://play.google.com/store/apps/details?id=dev.omalauncher"><img src="https://play.google.com/intl/en_us/badges/static/images/badges/en_badge_web_generic.png" alt="Get the original Omalauncher on Google Play" height="80"></a>
 
 ![The home screen in twelve Omarchy themes, each with different widgets](art/collage.png)
 

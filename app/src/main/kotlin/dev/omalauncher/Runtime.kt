@@ -40,6 +40,7 @@ import dev.omalauncher.linux.TerminalFont
 import dev.omalauncher.linux.bundledIcons
 import dev.omalauncher.linux.defaultApps
 import dev.omalauncher.linux.matches
+import dev.omalauncher.navigation.RecentTasks
 import dev.omalauncher.linux.run
 import dev.omalauncher.linux.shellQuote
 import dev.omalauncher.theme.Style
@@ -110,7 +111,7 @@ class Runtime(
     val launcherFont = LauncherFont(proot, style, context.resources).also { it.restore() }
     val gestures = Gestures(context, style)
     val linuxApps = LinuxAppCatalog(context, proot)
-    val androidApps = AndroidAppCatalog(context)
+    val androidApps = AndroidAppCatalog(context) { recentTasks.openAndroid(it) }
     val usage = AppUsage(context)
     val themes = ThemeStore(context, proot, style, isLinux = { linux }, onConfigChanged = ::syncGuest)
     private val audio = AudioBridge(proot)
@@ -190,6 +191,9 @@ class Runtime(
     /** Its jobs write files and start the guest; one that fails (storage full) mustn't take the home screen down. */
     private val scope =
         CoroutineScope(SupervisorJob() + Dispatchers.Main + CoroutineExceptionHandler { _, e -> Log.e(TAG, "background job failed", e) })
+    val recentTasks = RecentTasks(context, scope) { handle ->
+        wm.windowByHandle(handle)?.let(wm::close)
+    }
     private var started = false
     private var prepared = false
 

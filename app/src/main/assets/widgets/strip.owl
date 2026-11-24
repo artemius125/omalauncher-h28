@@ -3,22 +3,22 @@ strip "recent apps" {
   // to change: ask your agent to edit it, to pin apps, make the icons bigger or leave some apps out. .stock-strip.owl next
   // to it is this file as the launcher ships it, kept up to date: compare the two to see what changed in a newer
   // launcher. If this file is gone or doesn't compile, the stock strip shows instead.
-  meta { description: "The strip of recent apps above the prompt bar on home, with each app's long-press menu"; version: "1.0"; license: "MIT"; category: "system"; owl: 24 }
+  meta { description: "The strip of recent apps above the prompt bar on home, with each app's long-press menu"; version: "1.0"; license: "MIT"; category: "system"; owl: 27 }
   // The long-press menu's entries, by appAction's words, in the phone's language where it has a set.
   strings {
-    en { pin: "add to home"; info: "app info"; uninstall: "uninstall"; remove: "remove"; edit: "edit"; voice: "edit by voice"; share: "share" }
-    id { pin: "tambah ke layar utama"; info: "info aplikasi"; uninstall: "uninstal"; remove: "hapus"; edit: "edit"; voice: "edit dengan suara"; share: "bagikan" }
-    es { pin: "agregar a inicio"; info: "info de la app"; uninstall: "desinstalar"; remove: "quitar"; edit: "editar"; voice: "editar por voz"; share: "compartir" }
-    pt { pin: "adicionar à tela inicial"; info: "informações do app"; uninstall: "desinstalar"; remove: "remover"; edit: "editar"; voice: "editar por voz"; share: "compartilhar" }
-    de { pin: "zum startbildschirm hinzufügen"; info: "app-info"; uninstall: "deinstallieren"; remove: "entfernen"; edit: "bearbeiten"; voice: "per sprache bearbeiten"; share: "teilen" }
-    zh { pin: "添加到主屏幕"; info: "应用信息"; uninstall: "卸载"; remove: "移除"; edit: "编辑"; voice: "语音编辑"; share: "分享" }
-    ru { pin: "добавить на главный экран"; info: "о приложении"; uninstall: "удалить"; remove: "убрать"; edit: "изменить"; voice: "изменить голосом"; share: "поделиться" }
-    ja { pin: "ホームに追加"; info: "アプリ情報"; uninstall: "アンインストール"; remove: "削除"; edit: "編集"; voice: "音声で編集"; share: "共有" }
-    uk { pin: "додати на головний екран"; info: "про додаток"; uninstall: "видалити"; remove: "прибрати"; edit: "змінити"; voice: "змінити голосом"; share: "поділитися" }
-    fr { pin: "ajouter à l’accueil"; info: "infos sur l’appli"; uninstall: "désinstaller"; remove: "retirer"; edit: "modifier"; voice: "modifier à la voix"; share: "partager" }
-    tr { pin: "ana ekrana ekle"; info: "uygulama bilgileri"; uninstall: "yüklemeyi kaldır"; remove: "kaldır"; edit: "düzenle"; voice: "sesle düzenle"; share: "paylaş" }
-    it { pin: "aggiungi alla schermata home"; info: "informazioni app"; uninstall: "disinstalla"; remove: "rimuovi"; edit: "modifica"; voice: "modifica con la voce"; share: "condividi" }
-    vi { pin: "thêm vào màn hình chính"; info: "thông tin ứng dụng"; uninstall: "gỡ cài đặt"; remove: "gỡ"; edit: "chỉnh sửa"; voice: "chỉnh sửa bằng giọng nói"; share: "chia sẻ" }
+    en { close: "Close app"; pin: "add to home"; info: "app info"; uninstall: "uninstall"; remove: "remove"; edit: "edit"; voice: "edit by voice"; share: "share" }
+    id { close: "Tutup aplikasi"; pin: "tambah ke layar utama"; info: "info aplikasi"; uninstall: "uninstal"; remove: "hapus"; edit: "edit"; voice: "edit dengan suara"; share: "bagikan" }
+    es { close: "Cerrar aplicación"; pin: "agregar a inicio"; info: "info de la app"; uninstall: "desinstalar"; remove: "quitar"; edit: "editar"; voice: "editar por voz"; share: "compartir" }
+    pt { close: "Fechar aplicativo"; pin: "adicionar à tela inicial"; info: "informações do app"; uninstall: "desinstalar"; remove: "remover"; edit: "editar"; voice: "editar por voz"; share: "compartilhar" }
+    de { close: "app schließen"; pin: "zum startbildschirm hinzufügen"; info: "app-info"; uninstall: "deinstallieren"; remove: "entfernen"; edit: "bearbeiten"; voice: "per sprache bearbeiten"; share: "teilen" }
+    zh { close: "关闭应用"; pin: "添加到主屏幕"; info: "应用信息"; uninstall: "卸载"; remove: "移除"; edit: "编辑"; voice: "语音编辑"; share: "分享" }
+    ru { close: "Закрыть приложение"; pin: "добавить на главный экран"; info: "о приложении"; uninstall: "удалить"; remove: "убрать"; edit: "изменить"; voice: "изменить голосом"; share: "поделиться" }
+    ja { close: "アプリを閉じる"; pin: "ホームに追加"; info: "アプリ情報"; uninstall: "アンインストール"; remove: "削除"; edit: "編集"; voice: "音声で編集"; share: "共有" }
+    uk { close: "Закрити застосунок"; pin: "додати на головний екран"; info: "про додаток"; uninstall: "видалити"; remove: "прибрати"; edit: "змінити"; voice: "змінити голосом"; share: "поділитися" }
+    fr { close: "Fermer l’application"; pin: "ajouter à l’accueil"; info: "infos sur l’appli"; uninstall: "désinstaller"; remove: "retirer"; edit: "modifier"; voice: "modifier à la voix"; share: "partager" }
+    tr { close: "Uygulamayı kapat"; pin: "ana ekrana ekle"; info: "uygulama bilgileri"; uninstall: "yüklemeyi kaldır"; remove: "kaldır"; edit: "düzenle"; voice: "sesle düzenle"; share: "paylaş" }
+    it { close: "Chiudi app"; pin: "aggiungi alla schermata home"; info: "informazioni app"; uninstall: "disinstalla"; remove: "rimuovi"; edit: "modifica"; voice: "modifica con la voce"; share: "condividi" }
+    vi { close: "Đóng ứng dụng"; pin: "thêm vào màn hình chính"; info: "thông tin ứng dụng"; uninstall: "gỡ cài đặt"; remove: "gỡ"; edit: "chỉnh sửa"; voice: "chỉnh sửa bằng giọng nói"; share: "chia sẻ" }
   }
   // The recent apps, last opened first, and how home draws its apps: vertical beside the grid in landscape, monochrome
   // silhouettes, bare icons without a tile, and the tiles' outline color.
@@ -53,7 +53,8 @@ strip "recent apps" {
 
   component Cell(a) {
     Box {
-      size: 48
+      width: 48
+      height: 52
       align: center
       radius: 12 * corners
       clip: true
@@ -66,7 +67,16 @@ strip "recent apps" {
         menu = a.key
         menuShortcuts = shortcuts(a.key)
       }
-      Icon { a: a }
+      Box { offset: [0, -5]; Icon { a: a } }
+      if a.running {
+        Box {
+          size: 8
+          align: center
+          offset: [0, 21]
+          background: radial(0.5, 0.5, 0.5, [alpha(accent, 0.75), alpha(accent, 0)])
+          Box { size: 4; radius: 2; background: accent }
+        }
+      }
       Popup {
         visible: menu == a.key && menuShortcuts != null
         position: above

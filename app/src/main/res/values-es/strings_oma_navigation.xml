@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="oma_navigation">Gestos de OMA</string>
+    <string name="oma_navigation_description">Toca el indicador de OMA o desliza hacia arriba para ir a inicio. Desliza hacia arriba y mantén para ver las aplicaciones abiertas. OMA no lee las ventanas.</string>
+    <string name="oma_recent">Aplicaciones recientes</string>
+    <string name="oma_home">Inicio</string>
+    <string name="oma_close_app">Cerrar aplicación</string>
+    <string name="oma_tasks_empty">OMA no tiene aplicaciones abiertas</string>
+    <string name="oma_task_unavailable">La ventana ya no está disponible</string>
+</resources>
