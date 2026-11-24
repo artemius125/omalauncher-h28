@@ -6,8 +6,8 @@ widget "service-status" {
   meta { owl: 16; description: "Check up to three HTTPS health endpoints from Android. Tap the tile to configure them." }
 
   strings {
-    en { title: "Mac mini"; set: "add HTTPS addresses"; check: "check now"; pending: "checking…"; failed: "connection failed"; invalid: "use an HTTPS URL" }
-    ru { title: "Mac mini"; set: "добавить HTTPS-адреса"; check: "проверить сейчас"; pending: "проверка…"; failed: "нет соединения"; invalid: "нужен URL с HTTPS" }
+    en { title: "Mac mini"; set: "HTTPS addresses"; check: "check now"; pending: "checking…"; failed: "connection failed"; invalid: "use an HTTPS URL" }
+    ru { title: "Mac mini"; set: "HTTPS-адреса"; check: "проверить сейчас"; pending: "проверка…"; failed: "нет соединения"; invalid: "нужен URL с HTTPS" }
   }
 
   onTap: screen()
