@@ -16,6 +16,8 @@ import android.media.MediaPlayer
 import android.os.BatteryManager
 import android.os.Build
 import android.os.Environment
+import android.os.HardwarePropertiesManager
+import android.os.PowerManager
 import android.os.StatFs
 import android.view.Display
 import android.view.HapticFeedbackConstants
@@ -241,6 +243,7 @@ class WidgetServices(
         when (name) {
             "battery" -> battery(context)
             "batteryHistory" -> batteryHistory.value()
+            "thermal" -> thermal()
             "power" -> power()
             "device" -> device()
             "system" -> system()
@@ -426,6 +429,29 @@ class WidgetServices(
      * were read: a widget's rate is the change in bytes over the change in [SystemClock.elapsedRealtime], whatever the
      * gap. A phone that doesn't keep a counter answers -1 for it, null here.
      */
+    private var cpuTemperatureAllowed = true
+
+    private fun thermal(): Value {
+        val manager = context.getSystemService(PowerManager::class.java)
+        val temperature = if (cpuTemperatureAllowed) {
+            try {
+                context.getSystemService(HardwarePropertiesManager::class.java)
+                    ?.getDeviceTemperatures(HardwarePropertiesManager.DEVICE_TEMPERATURE_CPU, HardwarePropertiesManager.TEMPERATURE_CURRENT)
+                    ?.filter { it in -20f..150f }
+                    ?.maxOrNull()
+            } catch (_: SecurityException) {
+                cpuTemperatureAllowed = false
+                null
+            }
+        } else {
+            null
+        }
+        return Obj(mapOf(
+            "status" to (manager?.currentThermalStatus?.let { Num(it.toDouble()) } ?: Null),
+            "cpuC" to (temperature?.let { Num(it.toDouble()) } ?: Null),
+        ))
+    }
+
     private fun network(): Value {
         fun bytes(v: Long) = if (v == TrafficStats.UNSUPPORTED.toLong()) Null else Num(v.toDouble())
         return Obj(

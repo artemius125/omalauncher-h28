@@ -48,4 +48,4 @@ file only this phone runs, `owl: 12` is fine; for the store, a lower level reach
 
 - **27**: `running` and the `close` action on apps in `android.strip` for tasks managed by Omalauncher.
 - **28**: `launcher("linux:session")` opens the Linux session control; `launcher("widgets")` opens OWL files in Oma Files.
-- **29**: `ping(localIp)` checks whether a local device responds from Android, and `android.batteryHistory` supplies recent battery observations.
+- **29**: `ping(localIp)` checks whether a local device responds from Android, and `android.batteryHistory` supplies recent battery observations. `android.thermal` reads tablet thermal status.
