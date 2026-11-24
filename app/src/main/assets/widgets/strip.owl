@@ -39,14 +39,14 @@ strip "recent apps" {
         if a.hasIcon {
           Image { src: a.icon; size: 30; tint: accent; label: a.label }
         } else {
-          Text { text: a.initials; fontSize: 14; color: accent }
+          Text { text: a.initials; fontSize: 14; color: accent; align: center; maxLines: 1 }
         }
       }
     } else {
       if a.hasIcon {
         Image { src: a.icon; size: s.monochrome ? 34 : 40; tint: s.monochrome ? accent : null; label: a.label }
       } else {
-        Text { text: a.initials; fontSize: 16; color: accent }
+        Text { text: a.initials; fontSize: 16; color: accent; align: center; maxLines: 1 }
       }
     }
   }
@@ -67,14 +67,21 @@ strip "recent apps" {
         menu = a.key
         menuShortcuts = shortcuts(a.key)
       }
-      Box { offset: [0, -5]; Icon { a: a } }
-      if a.running {
+      Column {
+        align: center
+        gap: 2
+        Box { size: 40; align: center; Icon { a: a } }
         Box {
-          size: 8
+          size: 6
           align: center
-          offset: [0, 21]
-          background: radial(0.5, 0.5, 0.5, [alpha(accent, 0.75), alpha(accent, 0)])
-          Box { size: 4; radius: 2; background: accent }
+          if a.running {
+            Box {
+              size: 6
+              align: center
+              background: radial(0.5, 0.5, 0.5, [alpha(accent, 0.75), alpha(accent, 0)])
+              Box { size: 4; radius: 2; background: accent }
+            }
+          }
         }
       }
       Popup {
@@ -83,22 +90,26 @@ strip "recent apps" {
         onDismiss: menu = ""
         width: 200
         gap: 0
-        // The app's shortcuts first, as stock launchers list them: tap to open, + to put one on home.
-        for sc in menuShortcuts key sc.key {
-          Row {
-            fill: width
-            align: center
-            gap: 10
-            padding: [12, 6]
-            onTap: { menu = ""; open(sc.key) }
-            Image { src: sc.icon; size: 24; tint: s.monochrome ? accent : null; label: sc.name }
-            Text { text: sc.name; weight: 1; maxLines: 1 }
-            Text { text: "[+]"; color: accent; onTap: { menu = ""; appAction("pin", sc.key) } }
+        Column {
+          fill: width
+          scroll: true
+          // The app's shortcuts first, as stock launchers list them: tap to open, + to put one on home.
+          for sc in menuShortcuts key sc.key {
+            Row {
+              fill: width
+              align: center
+              gap: 10
+              padding: [12, 6]
+              onTap: { menu = ""; open(sc.key) }
+              Image { src: sc.icon; size: 24; tint: s.monochrome ? accent : null; label: sc.name }
+              Text { text: sc.name; weight: 1; maxLines: 1 }
+              Text { text: "[+]"; color: accent; onTap: { menu = ""; appAction("pin", sc.key) } }
+            }
           }
-        }
-        Spacer { visible: len(menuShortcuts) > 0; height: 1; fill: width; background: border }
-        for w in a.actions {
-          Text { text: get(str, w, w); fontSize: 15; fill: width; padding: [12, 12]; onTap: { menu = ""; appAction(w, a.key) } }
+          Spacer { visible: len(menuShortcuts) > 0; height: 1; fill: width; background: border }
+          for w in a.actions {
+            Text { text: get(str, w, w); fontSize: 15; fill: width; padding: [12, 12]; onTap: { menu = ""; appAction(w, a.key) } }
+          }
         }
       }
     }
@@ -114,7 +125,7 @@ strip "recent apps" {
         width: 56
         fill: height
         scroll: true
-        gap: 0
+        gap: 4
         align: center
         padding: [0, 4]
         // Home's tile glass and outline, unless home's apps are bare icons.
@@ -133,8 +144,9 @@ strip "recent apps" {
         fill: width
         height: 56
         scroll: true
-        gap: 0
-        padding: [4, 0]
+        gap: 4
+        align: center
+        padding: [4, 2]
         background: s.bare ? transparent : alpha(background, tileOpacity)
         frost: s.bare ? 0 : tileFrost
         border: s.bare ? 0 : borderWidth

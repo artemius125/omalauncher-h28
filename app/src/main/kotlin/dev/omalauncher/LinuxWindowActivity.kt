@@ -42,6 +42,8 @@ import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.lifecycleScope
 import dev.omalauncher.ui.ExtraKeys
 import dev.omalauncher.ui.ImagePicker
 import dev.omalauncher.ui.KeyboardSink
@@ -52,6 +54,7 @@ import dev.omalauncher.ui.linuxWindowInput
 import dev.omalauncher.wayland.WindowRenderer
 import dev.omalauncher.wayland.XdgToplevel
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.launch
 
 /**
  * Shows a single Linux window as its own Android task, so it gets its own
@@ -59,24 +62,27 @@ import kotlinx.coroutines.flow.first
  */
 class LinuxWindowActivity : InstantActivity() {
     private var window: XdgToplevel? = null
+    private val windowHandle get() = intent.data?.lastPathSegment
     private val imagePicker = ImagePicker(this) { runtime }
     private val asks = WidgetAsks(this)
 
     override fun create(savedInstanceState: Bundle?) {
-        val window = runtime.wm.windowByHandle(intent.data?.lastPathSegment)
+        val handle = windowHandle
+        val window = runtime.wm.windowByHandle(handle)
         if (window == null) {
             // The window is gone, e.g. the process restarted since Recents was built.
             finishAndRemoveTask()
             return
         }
         this.window = window
+        lifecycleScope.launch {
+            snapshotFlow { runtime.wm.windowByHandle(handle) === window }.first { !it }
+            if (lifecycle.currentState.isAtLeast(Lifecycle.State.RESUMED)) closeInstantly()
+            else finishAndRemoveTask()
+        }
         setInstantContent {
             AppWindow(runtime, window)
             BackHandler { backInstantly() }
-            LaunchedEffect(window) {
-                snapshotFlow { window in runtime.wm.appWindows }.first { !it }
-                closeInstantly()
-            }
             // Terminals retitle constantly; only a new label changes the Recents card.
             val label = runtime.displayName(window.appId, window.title)
             val appIcon = runtime.iconNamed(runtime.agentOf(window.appId, label)?.name ?: label)
@@ -105,7 +111,7 @@ class LinuxWindowActivity : InstantActivity() {
     override fun onDestroy() {
         super.onDestroy()
         val w = window ?: return
-        if (isFinishing && w in runtime.wm.appWindows) runtime.wm.close(w)
+        if (isFinishing && runtime.wm.windowByHandle(windowHandle) === w) runtime.wm.close(w)
     }
 
     // Lint flags super.dispatchKeyEvent: ComponentActivity marks its override @RestrictTo, but Activity's is public API.

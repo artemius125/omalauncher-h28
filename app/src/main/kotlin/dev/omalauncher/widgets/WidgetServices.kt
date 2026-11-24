@@ -1037,7 +1037,8 @@ class WidgetServices(
     private fun openTasksFor(hit: AppHit): List<OpenTask> =
         runtime.recentTasks.tasks.filter { task ->
             when (hit) {
-                is AppHit.Android -> hit.app.profile == null && task.component == hit.app.component
+                is AppHit.Android -> hit.app.profile == null && task.window == null && task.owl == null &&
+                    task.component == hit.app.component
                 is AppHit.Owl -> task.owl == hit.spec.file.name
                 is AppHit.Linux -> runtime.wm.windowByHandle(task.window)?.let { window ->
                     (window.appId.isNotEmpty() && hit.app.matches(window.appId)) ||

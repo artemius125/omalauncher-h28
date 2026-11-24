@@ -31,13 +31,17 @@ data class OpenTask(
 class RecentTasks(
     private val context: Context,
     private val scope: CoroutineScope,
+    private val windowExists: (String) -> Boolean,
     private val closeWindow: (String) -> Unit,
 ) {
     val supported = Build.VERSION.SDK_INT == Build.VERSION_CODES.R
     var gesturesEnabled by mutableStateOf(supported && OmaNavigationService.enabled(context))
         private set
-    var tasks by mutableStateOf(emptyList<OpenTask>())
-        private set
+    private var reportedTasks by mutableStateOf(emptyList<OpenTask>())
+    // Android can keep the activity after its Wayland window has gone. Observe
+    // the compositor so Recents and the strip both update when the window closes.
+    val tasks: List<OpenTask>
+        get() = reportedTasks.filter { it.window == null || windowExists(it.window) }
     private val manager = context.getSystemService(ActivityManager::class.java)
     private val updates = Mutex()
 
@@ -111,7 +115,7 @@ class RecentTasks(
     }
 
     private suspend fun refresh() {
-        tasks = withContext(Dispatchers.IO) { read().map { it.first } }
+        reportedTasks = withContext(Dispatchers.IO) { read().map { it.first } }
     }
 
     private fun read(): List<Pair<OpenTask, ActivityManager.AppTask>> =

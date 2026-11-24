@@ -191,7 +191,7 @@ class Runtime(
     /** Its jobs write files and start the guest; one that fails (storage full) mustn't take the home screen down. */
     private val scope =
         CoroutineScope(SupervisorJob() + Dispatchers.Main + CoroutineExceptionHandler { _, e -> Log.e(TAG, "background job failed", e) })
-    val recentTasks = RecentTasks(context, scope) { handle ->
+    val recentTasks = RecentTasks(context, scope, windowExists = { wm.windowByHandle(it) != null }) { handle ->
         wm.windowByHandle(handle)?.let(wm::close)
     }
     private var started = false

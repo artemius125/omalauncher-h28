@@ -8,7 +8,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectVerticalDragGestures
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
@@ -29,16 +29,23 @@ import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import dev.omalauncher.R
 import dev.omalauncher.Runtime
 import dev.omalauncher.ui.BracketAction
+import dev.omalauncher.ui.HomeGap
 import dev.omalauncher.ui.Mono
 import dev.omalauncher.ui.Palette
+import dev.omalauncher.ui.PanelGap
 import dev.omalauncher.ui.TextSize
 import dev.omalauncher.ui.frame
 
@@ -49,22 +56,31 @@ fun RecentOverview(runtime: Runtime, dismiss: () -> Unit) {
     val navigationRoom = if (recent.gesturesEnabled) OmaNavigationService.HANDLE_HEIGHT_DP.dp else 0.dp
     BackHandler(onBack = dismiss)
     Column(
-        Modifier.fillMaxSize().background(Palette.background).safeDrawingPadding().padding(bottom = navigationRoom).padding(20.dp),
-        verticalArrangement = Arrangement.spacedBy(12.dp),
+        Modifier.fillMaxSize().background(Palette.background).safeDrawingPadding().padding(bottom = navigationRoom).padding(PanelGap),
+        verticalArrangement = Arrangement.spacedBy(HomeGap),
     ) {
-        Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+        Row(
+            Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(HomeGap),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
             BasicText(
                 stringResource(R.string.oma_recent),
                 Modifier.weight(1f),
                 style = Mono.copy(fontSize = TextSize.Title),
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
             )
             BracketAction(stringResource(R.string.oma_home), Palette.accent, onClick = dismiss)
         }
         when {
             recent.tasks.isEmpty() -> BasicText(stringResource(R.string.oma_tasks_empty), style = Mono)
-            else -> Box(Modifier.weight(1f).fillMaxWidth(), contentAlignment = Alignment.Center) {
-                LazyRow(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                    items(recent.tasks, key = { it.id }) { task -> TaskCard(runtime, task, dismiss) }
+            else -> BoxWithConstraints(Modifier.weight(1f).fillMaxWidth().clipToBounds(), contentAlignment = Alignment.Center) {
+                val cardWidth = minOf(220.dp, maxWidth)
+                LazyRow(horizontalArrangement = Arrangement.spacedBy(HomeGap)) {
+                    items(recent.tasks, key = { it.id }) { task ->
+                        TaskCard(runtime, task, cardWidth, dismiss)
+                    }
                 }
             }
         }
@@ -75,7 +91,7 @@ fun RecentOverview(runtime: Runtime, dismiss: () -> Unit) {
 }
 
 @Composable
-private fun TaskCard(runtime: Runtime, task: OpenTask, dismiss: () -> Unit) {
+private fun TaskCard(runtime: Runtime, task: OpenTask, width: Dp, dismiss: () -> Unit) {
     val context = LocalContext.current
     val app = runtime.androidApps.apps.firstOrNull { it.component == task.component && it.profile == null }
         ?: runtime.androidApps.apps.firstOrNull { it.component.packageName == task.component.packageName && it.profile == null }
@@ -98,7 +114,7 @@ private fun TaskCard(runtime: Runtime, task: OpenTask, dismiss: () -> Unit) {
     val close by rememberUpdatedState { runtime.recentTasks.close(task) }
     var drag by remember(task.id) { mutableFloatStateOf(0f) }
     Column(
-        Modifier.width(176.dp).height(168.dp)
+        Modifier.width(width).height(168.dp)
             .pointerInput(task.id) {
                 detectVerticalDragGestures(
                     onDragStart = { drag = 0f },
@@ -120,7 +136,20 @@ private fun TaskCard(runtime: Runtime, task: OpenTask, dismiss: () -> Unit) {
         verticalArrangement = Arrangement.Center,
     ) {
         if (icon != null) Image(icon, contentDescription = null, modifier = Modifier.size(44.dp))
-        BasicText(label, Modifier.padding(top = 10.dp), style = Mono.copy(fontSize = TextSize.Item), maxLines = 2)
-        BracketAction(stringResource(R.string.oma_close_app), Palette.muted, onClick = close)
+        BasicText(
+            label,
+            Modifier.weight(1f, fill = false).padding(top = 10.dp),
+            style = Mono.copy(fontSize = TextSize.Item, textAlign = TextAlign.Center),
+            maxLines = 2,
+            overflow = TextOverflow.Ellipsis,
+        )
+        val closeLabel = stringResource(R.string.oma_close_app)
+        BasicText(
+            "[ $closeLabel ]",
+            Modifier.clickable(role = Role.Button, onClick = close).padding(horizontal = 8.dp, vertical = 6.dp),
+            style = Mono.copy(color = Palette.accent, textAlign = TextAlign.Center),
+            maxLines = 2,
+            overflow = TextOverflow.Ellipsis,
+        )
     }
 }

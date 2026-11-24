@@ -4,6 +4,7 @@ import android.os.Handler
 import android.os.Looper
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import dev.omalauncher.wayland.Keys
@@ -57,7 +58,7 @@ class WindowManager : WindowManagerHooks {
      * carry a per-process session prefix: a stale card must never resolve to a
      * different window that happens to reuse its number after a restart.
      */
-    private val handles = HashMap<String, XdgToplevel>()
+    private val handles = mutableStateMapOf<String, XdgToplevel>()
     private val session = System.currentTimeMillis().toString(36)
     private var nextHandle = 1
 
@@ -86,7 +87,7 @@ class WindowManager : WindowManagerHooks {
         main.post {
             if (embedded.remove(toplevel)) release(toplevel)
             appWindows -= toplevel
-            handles.values.remove(toplevel)
+            handleOf(toplevel)?.let(handles::remove)
             sizes -= toplevel
             if (focused === toplevel) focus(null)
         }
