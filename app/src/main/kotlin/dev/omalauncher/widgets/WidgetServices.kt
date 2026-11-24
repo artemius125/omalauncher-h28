@@ -56,6 +56,7 @@ import java.util.concurrent.atomic.AtomicInteger
 import java.util.concurrent.atomic.AtomicBoolean
 import kotlinx.coroutines.suspendCancellableCoroutine
 import dev.omalauncher.net.WebSocket
+import dev.omalauncher.net.AvailabilityTarget
 import dev.omalauncher.net.LocalNetwork
 import dev.omalauncher.net.openHttp
 import dev.omalauncher.net.pin
@@ -111,7 +112,9 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.channels.awaitClose
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.SharingStarted
@@ -129,7 +132,9 @@ import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 import java.io.File
 import java.io.IOException
+import java.net.InetAddress
 import java.net.URL
+import java.net.UnknownHostException
 import java.util.concurrent.ConcurrentHashMap
 import javax.net.ssl.HttpsURLConnection
 import kotlin.math.abs
@@ -233,11 +238,71 @@ class WidgetServices(
         withContext(Dispatchers.IO) {
             if (LocalNetwork.missing(context)) return@withContext Null
             val ip = runCatching { InetAddresses.parseNumericAddress(address) }.getOrNull()
-                ?.takeIf { it.isSiteLocalAddress || it.isLinkLocalAddress || (it.address.size == 16 && (it.address[0].toInt() and 0xfe) == 0xfc) }
+                ?.takeIf(LocalNetwork::isLocal)
                 ?: return@withContext Null
             val reachable = runCatching { ip.isReachable(1_500) }.getOrDefault(false)
             Obj(mapOf("address" to Str(address), "online" to bool(reachable)))
         }
+
+    private val availabilityIo = Dispatchers.IO.limitedParallelism(4)
+
+    override suspend fun availability(addresses: List<String>): Value =
+        coroutineScope {
+            val results = addresses.asSequence().distinct().take(AvailabilityTarget.LIMIT).map { address ->
+                async(availabilityIo) { address to checkAvailability(address) }
+            }.toList().awaitAll()
+            Obj(results.toMap())
+        }
+
+    private fun checkAvailability(address: String): Value {
+        var code: Int? = null
+        val status =
+            try {
+                when (val target = AvailabilityTarget.parse(address)) {
+                    null -> "invalid"
+                    is AvailabilityTarget.Host -> {
+                        val resolved = InetAddress.getAllByName(target.name).take(4)
+                        val allowed = if (LocalNetwork.missing(context)) resolved.filterNot(LocalNetwork::isLocal) else resolved
+                        when {
+                            allowed.isEmpty() -> "permission"
+                            allowed.any { ip -> runCatching { ip.isReachable(1_500) }.getOrDefault(false) } -> "online"
+                            else -> "offline"
+                        }
+                    }
+                    is AvailabilityTarget.Https -> {
+                        val connection = openHttp(target.url, 3_000, 3_000)
+                        try {
+                            connection.instanceFollowRedirects = false
+                            connection.useCaches = false
+                            val response = connection.responseCode
+                            code = response.takeIf { it >= 100 }
+                            when (response) {
+                                in 200..399 -> "online"
+                                in 100..599 -> "httpError"
+                                else -> "offline"
+                            }
+                        } finally {
+                            connection.disconnect()
+                        }
+                    }
+                }
+            } catch (_: UnknownHostException) {
+                "dns"
+            } catch (_: javax.net.ssl.SSLException) {
+                "tls"
+            } catch (_: IOException) {
+                "offline"
+            } catch (_: SecurityException) {
+                "permission"
+            }
+        return Obj(
+            mapOf(
+                "status" to Str(status),
+                "code" to (code?.let { Num(it.toDouble()) } ?: Null),
+                "at" to Num(System.currentTimeMillis() / 1000.0),
+            ),
+        )
+    }
 
     override fun android(name: String): Value =
         when (name) {

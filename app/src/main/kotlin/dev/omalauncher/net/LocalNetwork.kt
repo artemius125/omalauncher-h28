@@ -37,8 +37,10 @@ object LocalNetwork {
     /** Whether [url]'s host is on the local network: a private, link-local or unique local address. */
     fun isLocal(url: String): Boolean {
         val host = runCatching { URI(url).host?.removeSurrounding("[", "]") }.getOrNull() ?: return false
-        return runCatching { InetAddress.getAllByName(host) }.getOrNull().orEmpty().any {
-            it.isSiteLocalAddress || it.isLinkLocalAddress || (it is Inet6Address && (it.address[0].toInt() and 0xfe) == 0xfc)
-        }
+        return runCatching { InetAddress.getAllByName(host) }.getOrNull().orEmpty().any(::isLocal)
     }
+
+    fun isLocal(address: InetAddress): Boolean =
+        address.isSiteLocalAddress || address.isLinkLocalAddress ||
+            (address is Inet6Address && (address.address[0].toInt() and 0xfe) == 0xfc)
 }

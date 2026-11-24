@@ -29,9 +29,9 @@ work without Launcher3’s Quickstep, root, or Shizuku.
   monitor overlays network receive and send on one scale and plots up to
   three hours of recorded battery charge. It also shows CPU, RAM, power, and
   tablet thermal status. Tap to inspect the graphs and edit live
-  OWL files. The one-cell devices tile checks up to three local IP addresses
-  once a minute while its home page or a neighbor is active. Tap it to enter
-  the addresses.
+  OWL files. The one-cell availability tile checks devices and web services once
+  a minute while its page or a neighbor is active. Tap to add, edit or delete
+  IP addresses, domain names and HTTPS URLs.
   The calendar reads Android events when allowed. The weather tile keeps its
   last forecast when updating fails and shows the failure in its details.
 - **Lock screen wallpaper.** Style can apply the selected Omarchy background

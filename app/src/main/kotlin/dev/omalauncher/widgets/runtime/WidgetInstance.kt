@@ -83,6 +83,7 @@ import dev.omalauncher.widgets.lang.textFields
 /** What widgets need from the launcher: guest commands, Android data and actions. */
 interface Services {
     suspend fun ping(address: String): Value = Null
+    suspend fun availability(addresses: List<String>): Value = Null
 
     suspend fun cmd(
         command: String,
@@ -1356,6 +1357,10 @@ class WidgetInstance(
                 "ping" -> {
                     val target = eval(requireNotNull(g.arg), root, g.name)
                     target.textOrNull()?.let { services.ping(it) } ?: Null
+                }
+                "availability" -> {
+                    val targets = eval(requireNotNull(g.arg), root, g.name) as? Lst
+                    services.availability(targets?.items.orEmpty().mapNotNull { (it as? Str)?.v })
                 }
                 "cmd", "http" -> {
                     val address = requireNotNull(g.arg)

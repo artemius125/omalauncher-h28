@@ -211,7 +211,8 @@ internal val SINCE =
         mapOf("appAction(\"voice\")" to 26) +
         mapOf("appAction(\"close\")" to 27) +
         listOf("launcher(\"linux:session\")", "launcher(\"widgets\")").associateWith { 28 } +
-        listOf("ping", "android.batteryHistory", "android.thermal").associateWith { 29 }
+        listOf("ping", "android.batteryHistory", "android.thermal").associateWith { 29 } +
+        listOf("availability").associateWith { 30 }
 
 /** A Shader's `uniform shader name;`, an image it samples, named like this in [SINCE]. */
 internal const val SHADER_IMAGE = "uniform shader"

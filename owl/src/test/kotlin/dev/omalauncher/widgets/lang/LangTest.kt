@@ -307,6 +307,24 @@ class LangTest {
         assertTrue(compileError(source.replace("owl: 29", "owl: 28")).contains("ping needs owl 29"))
     }
 
+    @Test fun availabilitySourcesUseAndroidAndPollAtMostOncePerMinute() {
+        val source = """
+            widget {
+                meta { owl: 30 }
+                state targets = ["192.168.1.5", "https://example.org/health"] persist
+                source checks = availability(targets) every 1s
+                Text { text: checks[targets[0]].status }
+            }
+        """.trimIndent()
+        val program = Compiler.compile(source)
+        val checks = program.globals.filterIsInstance<Global.Source>().single()
+        assertEquals("availability", checks.kind)
+        assertEquals(60.0, checks.every, 0.0)
+        assertFalse(program.needsLinux)
+        assertTrue(program.commands.single().contains("HTTPS"))
+        assertTrue(compileError(source.replace("owl: 30", "owl: 29")).contains("availability needs owl 30"))
+    }
+
     @Test fun postSendsFromHandlers() {
         val p =
             Compiler.compile(

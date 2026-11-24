@@ -3,33 +3,57 @@ widget "device-status" {
   order: 2
   size: 1x1
   minSize: 1x1
-  meta { owl: 29; description: "Check the reachability of three local devices once a minute." }
+  meta { owl: 30; description: "Manage a list of devices and services checked from Android." }
 
   strings {
-    en { title: "devices"; computer: "Computer"; online: "online"; offline: "no reply"; pending: "—"; ip: "local IP" }
-    ru { title: "устройства"; computer: "Компьютер"; online: "в сети"; offline: "нет ответа"; pending: "—"; ip: "локальный IP" }
+    en {
+      title: "availability"; computer: "Computer"; summary: "online"; online: "responding"; offline: "no reply"
+      pending: "Checking…"; invalid: "Invalid address"; dns: "Name not resolved"; tls: "TLS error"
+      permission: "Network access required"; add: "+ Add"; edit: "Edit"; remove: "Delete"
+      save: "Save"; cancel: "Cancel"; name: "Name (optional)"; address: "IP, domain or HTTPS URL"
+      help: "Use an IP or domain to check the host, or an https:// URL to check a web service."
+      empty: "Add a device or server"; removeTitle: "Delete this check?"; limit: "24 checks maximum"
+    }
+    ru {
+      title: "доступность"; computer: "Компьютер"; summary: "в сети"; online: "отвечает"; offline: "нет ответа"
+      pending: "Проверка…"; invalid: "Неверный адрес"; dns: "Домен не найден"; tls: "Ошибка TLS"
+      permission: "Нужен доступ к сети"; add: "+ Добавить"; edit: "Изменить"; remove: "Удалить"
+      save: "Сохранить"; cancel: "Отмена"; name: "Название (необязательно)"; address: "IP, домен или HTTPS-адрес"
+      help: "IP или домен проверяет узел. Адрес с https:// проверяет веб-сервис."
+      empty: "Добавить устройство или сервер"; removeTitle: "Удалить эту проверку?"; limit: "Максимум 24 проверки"
+    }
   }
 
-  onTap: screen()
-
+  // Keep the previous persisted names so an APK update can carry the configured devices forward.
   state miniIp = "" persist
   state imacIp = "" persist
   state computerIp = "" persist
-  source mini = ping(miniIp == "" ? null : miniIp) every 1m
-  source imac = ping(imacIp == "" ? null : imacIp) every 1m
-  source computer = ping(computerIp == "" ? null : computerIp) every 1m
+  state targets = null persist
+  state editor = null
+  state deleting = null
+  state draftName = ""
+  state draftAddress = ""
 
-  component Device(name, address, result, detail) {
-    let known = address != "" && result.address == address
-    let color = !known ? muted : result.online ? green : red
-    Row {
-      gap: 5
-      align: center
-      Text { text: known ? "●" : "○"; color: color; fontSize: 8; maxLines: 1 }
-      Text { text: name; weight: 1; fontSize: detail ? 16 : 10; maxLines: 1 }
-      if detail {
-        Text { text: !known ? str.pending : result.online ? str.online : str.offline; color: color; style: small; maxLines: 1 }
-      }
+  let legacy = [
+    {name: "Mac mini", address: miniIp},
+    {name: "iMac", address: imacIp},
+    {name: str.computer, address: computerIp}
+  ].filter(item => item.address != "")
+  let devices = targets ?? legacy
+  source results = availability(devices.map(item => item.address)) every 1m
+  let total = len(devices)
+  let responding = count(devices, item => results[item.address].status == "online")
+  let failed = count(devices, item => results[item.address] != null && results[item.address].status != "online")
+  let badgeColor = failed > 0 ? red : responding == total ? green : muted
+
+  onTap: screen()
+
+  component Dot(status) {
+    Text {
+      text: status == null ? "○" : "●"
+      color: status == null ? muted : status == "online" ? green : red
+      fontSize: 8
+      maxLines: 1
     }
   }
 
@@ -37,22 +61,117 @@ widget "device-status" {
     fill: true
     justify: spaceEvenly
     gap: 2
-    Device { name: "Mac mini"; address: miniIp; result: mini; detail: false }
-    Device { name: "iMac"; address: imacIp; result: imac; detail: false }
-    Device { name: str.computer; address: computerIp; result: computer; detail: false }
+    if total == 0 {
+      Text { text: str.add; color: accent; fontSize: 10; align: center; maxLines: 1 }
+    } else {
+      for item in devices.take(total > 3 ? 2 : 3) {
+        Row {
+          gap: 5
+          align: center
+          Dot { status: results[item.address].status }
+          Text { text: item.name; weight: 1; fontSize: 10; maxLines: 1 }
+        }
+      }
+      if total > 3 {
+        Text { text: "${responding}/${total} ${str.summary}"; color: badgeColor; fontSize: 10; maxLines: 1 }
+      }
+    }
   }
 
   screen {
     title: str.title
     Column {
-      gap: 10
+      gap: 12
       scroll: true
-      Device { name: "Mac mini"; address: miniIp; result: mini; detail: true }
-      Input { text: miniIp; placeholder: str.ip; onSubmit: miniIp = trim(value) }
-      Device { name: "iMac"; address: imacIp; result: imac; detail: true }
-      Input { text: imacIp; placeholder: str.ip; onSubmit: imacIp = trim(value) }
-      Device { name: str.computer; address: computerIp; result: computer; detail: true }
-      Input { text: computerIp; placeholder: str.ip; onSubmit: computerIp = trim(value) }
+      Row {
+        fill: width
+        align: center
+        gap: 8
+        Text { text: total == 0 ? str.empty : "${responding}/${total} ${str.summary}"; style: body; color: total == 0 ? muted : badgeColor; weight: 1 }
+        if editor == null && total < 24 {
+          Button {
+            text: str.add
+            onTap: { deleting = null; draftName = ""; draftAddress = ""; editor = -1 }
+          }
+        }
+      }
+      if editor != null {
+        Column {
+          fill: width
+          gap: 8
+          padding: 12
+          background: surface
+          radius: 8 * corners
+          Input { text: editor < 0 ? "" : devices[editor].name; placeholder: str.name; onChange: draftName = value }
+          Input { text: editor < 0 ? "" : devices[editor].address; placeholder: str.address; onChange: draftAddress = value }
+          Text { text: str.help; style: small; color: muted }
+          Row {
+            gap: 8
+            if trim(draftAddress) != "" {
+              Button {
+                text: str.save
+                onTap: {
+                  let address = trim(draftAddress)
+                  let name = trim(draftName)
+                  let item = {name: name == "" ? address : name, address: address}
+                  targets = editor < 0 ? devices + [item] : set(devices, editor, item)
+                  editor = null
+                }
+              }
+            }
+            Button { text: str.cancel; onTap: editor = null }
+          }
+        }
+      }
+      if total >= 24 && editor == null {
+        Text { text: str.limit; style: small; color: muted }
+      }
+      if editor == null {
+        for item, i in devices {
+          let result = results[item.address]
+          let status = result.status
+          let description = status == null ? str.pending : status == "online" ? str.online :
+            status == "invalid" ? str.invalid : status == "dns" ? str.dns : status == "tls" ? str.tls :
+            status == "permission" ? str.permission : status == "httpError" ? "HTTP ${result.code}" : str.offline
+          let protocol = startsWith(lower(item.address), "https://") ? "HTTPS" : "Ping"
+          let reading = result.code != null && status == "online" ? " · HTTP ${result.code}" : ""
+          Column {
+            fill: width
+            padding: 12
+            gap: 5
+            border: 1
+            radius: 8 * corners
+            Row {
+              fill: width
+              gap: 8
+              align: center
+              Dot { status: status }
+              Text { text: item.name; weight: 1; fontSize: 16; bold: true; maxLines: 2 }
+            }
+            if item.name != item.address {
+              Text { text: item.address; style: small; color: muted; maxLines: 2 }
+            }
+            Text { text: "${protocol} · ${description}${reading}"; style: small; color: status == null ? muted : status == "online" ? green : red }
+            if result.at != null {
+              Text { text: fmtTime(result.at, "HH:mm:ss"); style: small; color: muted }
+            }
+            if deleting == i {
+              Text { text: str.removeTitle; style: small }
+              Row {
+                gap: 8
+                Button { text: str.remove; color: red; onTap: { targets = remove(devices, i); deleting = null } }
+                Button { text: str.cancel; onTap: deleting = null }
+              }
+            } else {
+              Row {
+                gap: 8
+                Button { text: str.edit; onTap: { deleting = null; draftName = item.name; draftAddress = item.address; editor = i } }
+                Button { text: str.remove; onTap: deleting = i }
+              }
+            }
+          }
+        }
+      }
     }
   }
 }

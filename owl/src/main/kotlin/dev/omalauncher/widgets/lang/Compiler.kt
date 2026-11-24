@@ -27,7 +27,7 @@ class Compiler private constructor(
          * instead of failing on what they don't know. Bump it with every
          * addition a widget could depend on: nodes, properties, builtins.
          */
-        const val LEVEL = 29
+        const val LEVEL = 30
         private const val MAX_ASSET_BYTES = 2 shl 20
 
         /** Pages as far out as a file can ask for; past Int's range, the pages either side of them would wrap. */
@@ -927,6 +927,15 @@ class Compiler private constructor(
                 val address = ex(e.args[0], root)
                 commands += "check whether a local device responds: " + ((address.const as? Str)?.v ?: "(address from widget values)")
                 Global.Source(d.name, "ping", address, (every ?: 60.0).coerceAtLeast(60.0), false, 0)
+            }
+            e is Expr.Call && e.name == "availability" -> {
+                if (e.args.size != 1 || e.named.isNotEmpty() || d.json || d.timeout != null) {
+                    fail("availability takes a list of addresses and optionally every", e.pos)
+                }
+                since("availability", e.pos)
+                val targets = ex(e.args[0], root)
+                commands += "check availability of IP addresses, domains or HTTPS URLs"
+                Global.Source(d.name, "availability", targets, (every ?: 60.0).coerceAtLeast(60.0), false, 0)
             }
             e is Expr.Call && e.name == "http" -> {
                 if (e.args.size !in 1..2) fail("http(\"https://...\") takes a URL and optionally a map of headers", e.pos)
@@ -2052,7 +2061,7 @@ class Compiler private constructor(
         if (e.name == "speech") fail("speech(...) is an action and gives nothing back: tap with onTap: speech(\"toggle\"), and read what's heard from source said = android.speech", e.pos)
         if (e.name in Builtins.actions) fail("${e.name}(...) is an action; use it in a handler like onTap", e.pos)
         if (e.name in setOf("history", "prev")) fail("${e.name}(...) keeps samples over time, so it only works as: let x = ${e.name}(...)", e.pos)
-        if (e.name in setOf("cmd", "stream", "http", "file", "ping")) fail("${e.name}(...) is a source: source x = ${e.name}(\"...\")", e.pos)
+        if (e.name in setOf("cmd", "stream", "http", "file", "ping", "availability")) fail("${e.name}(...) is a source: source x = ${e.name}(...)", e.pos)
         val b =
             Builtins.all[e.name] ?: run {
                 val isLet = ast.body.decls.any { it is Decl.Let && it.name == e.name } || e.name in nodeLets || lookup(e.name, s) is Ref.Local
