@@ -1,85 +1,58 @@
-widget "service-status" {
+widget "device-status" {
   page: 2
   order: 2
-  size: 2x2
-  minSize: 2x2
-  meta { owl: 17; description: "Check up to three HTTPS health endpoints from Android. Tap the tile to configure them." }
+  size: 1x1
+  minSize: 1x1
+  meta { owl: 29; description: "Check the reachability of three local devices once a minute." }
 
   strings {
-    en { title: "Mac mini"; set: "HTTPS addresses"; check: "check now"; pending: "checking…"; failed: "connection failed"; invalid: "use an HTTPS URL"; pin: "optional certificate SHA-256" }
-    ru { title: "Mac mini"; set: "HTTPS-адреса"; check: "проверить сейчас"; pending: "проверка…"; failed: "нет соединения"; invalid: "нужен URL с HTTPS"; pin: "SHA-256 сертификата, если нужен" }
+    en { title: "devices"; computer: "Computer"; online: "online"; offline: "no reply"; pending: "—"; ip: "local IP" }
+    ru { title: "устройства"; computer: "Компьютер"; online: "в сети"; offline: "нет ответа"; pending: "—"; ip: "локальный IP" }
   }
 
   onTap: screen()
 
-  state firstUrl = "" persist
-  state firstPin = "" persist
-  state secondUrl = "" persist
-  state secondPin = "" persist
-  state thirdUrl = "" persist
-  state thirdPin = "" persist
-  source firstCheck = http(startsWith(firstUrl, "https://") ? firstUrl : null, {}, pin: firstPin == "" ? null : firstPin) every 2m timeout 8s status
-  source secondCheck = http(startsWith(secondUrl, "https://") ? secondUrl : null, {}, pin: secondPin == "" ? null : secondPin) every 2m timeout 8s status
-  source thirdCheck = http(startsWith(thirdUrl, "https://") ? thirdUrl : null, {}, pin: thirdPin == "" ? null : thirdPin) every 2m timeout 8s status
+  state miniIp = "" persist
+  state imacIp = "" persist
+  state computerIp = "" persist
+  source mini = ping(miniIp == "" ? null : miniIp) every 1m
+  source imac = ping(imacIp == "" ? null : imacIp) every 1m
+  source computer = ping(computerIp == "" ? null : computerIp) every 1m
 
-  let endpoints = [firstUrl, secondUrl, thirdUrl]
-  let results = [firstCheck, secondCheck, thirdCheck]
-  let configured = endpoints.filter(s => s != "")
-
-  component CheckRow(target, result, slot) {
-    let host = split(sub(target, 8), "/")[0]
-    let ready = startsWith(target, "https://")
-    let code = result.code
+  component Device(name, address, result, detail) {
+    let known = address != "" && result.address == address
+    let color = !known ? muted : result.online ? green : red
     Row {
-      gap: 6
-      Text { text: result == null || !ready ? "○" : "●"; color: result == null || !ready ? muted : result.ok ? green : red }
-      Text { text: ready ? host : "#${slot}"; weight: 1; maxLines: 1; style: small }
-      Text { text: !ready ? str.invalid : result == null ? str.pending : code > 0 ? "HTTP ${code}" : str.failed; style: small; maxLines: 1 }
+      gap: 5
+      align: center
+      Text { text: known ? "●" : "○"; color: color; fontSize: 8; maxLines: 1 }
+      Text { text: name; weight: 1; fontSize: detail ? 16 : 10; maxLines: 1 }
+      if detail {
+        Text { text: !known ? str.pending : result.online ? str.online : str.offline; color: color; style: small; maxLines: 1 }
+      }
     }
   }
 
   Column {
     fill: true
-    gap: 5
-    Text { text: str.title; style: muted; maxLines: 1 }
-    if len(configured) == 0 {
-      Box {
-        weight: 1
-        fill: width
-        align: center
-        Button { text: str.set; onTap: screen() }
-      }
-    } else {
-      Column {
-        fill: width
-        weight: 1
-        justify: spaceEvenly
-        for i in range(3) key i {
-          if endpoints[i] != "" {
-            CheckRow { target: endpoints[i]; result: results[i]; slot: i + 1 }
-          }
-        }
-      }
-    }
+    justify: spaceEvenly
+    gap: 2
+    Device { name: "Mac mini"; address: miniIp; result: mini; detail: false }
+    Device { name: "iMac"; address: imacIp; result: imac; detail: false }
+    Device { name: str.computer; address: computerIp; result: computer; detail: false }
   }
 
   screen {
     title: str.title
     Column {
-      gap: 8
+      gap: 10
       scroll: true
-      Input { text: firstUrl; placeholder: "https://…/healthz"; onSubmit: { firstUrl = trim(value); refresh() } }
-      Input { text: firstPin; placeholder: str.pin; onSubmit: { firstPin = trim(value); refresh() } }
-      Input { text: secondUrl; placeholder: "https://…/healthz"; onSubmit: { secondUrl = trim(value); refresh() } }
-      Input { text: secondPin; placeholder: str.pin; onSubmit: { secondPin = trim(value); refresh() } }
-      Input { text: thirdUrl; placeholder: "https://…/healthz"; onSubmit: { thirdUrl = trim(value); refresh() } }
-      Input { text: thirdPin; placeholder: str.pin; onSubmit: { thirdPin = trim(value); refresh() } }
-      Button { text: str.check; onTap: refresh() }
-      for i in range(3) key i {
-        if endpoints[i] != "" {
-          CheckRow { target: endpoints[i]; result: results[i]; slot: i + 1 }
-        }
-      }
+      Device { name: "Mac mini"; address: miniIp; result: mini; detail: true }
+      Input { text: miniIp; placeholder: str.ip; onSubmit: miniIp = trim(value) }
+      Device { name: "iMac"; address: imacIp; result: imac; detail: true }
+      Input { text: imacIp; placeholder: str.ip; onSubmit: imacIp = trim(value) }
+      Device { name: str.computer; address: computerIp; result: computer; detail: true }
+      Input { text: computerIp; placeholder: str.ip; onSubmit: computerIp = trim(value) }
     }
   }
 }

@@ -3,11 +3,11 @@ widget "tablet-monitor" {
   order: 1
   size: 3x3
   minSize: 2x2
-  meta { owl: 28; description: "Six live charts for CPU, memory, network, Mac mini CPU temperature and battery power." }
+  meta { owl: 29; description: "Six live charts for CPU, memory, network, Mac mini CPU temperature and battery power." }
 
   strings {
     en {
-      title: "tablet history"; memory: "RAM"; rx: "↓ RX"; tx: "↑ TX"; temp: "Mac CPU °C"
+      title: "tablet history"; memory: "RAM"; rx: "↓ RX"; tx: "↑ TX"; network: "network"; battery: "battery"; hours: "−3 h"; now: "now"; temp: "Mac CPU °C"
       draw: "draw"; charge: "charge"; power: "battery W"; files: "OWL files"
       cpuScope: "CPU · launcher and its Linux processes"; noCpu: "CPU history needs Linux running"
       noTemp: "No Mac CPU temperature"; configure: "Mac CPU sensor HTTPS URL"; fingerprint: "sensor certificate SHA-256"
@@ -15,7 +15,7 @@ widget "tablet-monitor" {
       wattsNote: "Battery power for the whole tablet."
     }
     ru {
-      title: "история планшета"; memory: "ОЗУ"; rx: "↓ приём"; tx: "↑ отправка"; temp: "ЦП Mac °C"
+      title: "история планшета"; memory: "ОЗУ"; rx: "↓ приём"; tx: "↑ отправка"; network: "сеть"; battery: "батарея"; hours: "−3 ч"; now: "сейчас"; temp: "ЦП Mac °C"
       draw: "расход"; charge: "заряд"; power: "питание"; files: "файлы OWL"
       cpuScope: "ЦП · лаунчер и его Linux-процессы"; noCpu: "Для истории ЦП запусти Linux"
       noTemp: "Нет данных о температуре ЦП Mac"; configure: "HTTPS-адрес датчика ЦП Mac"; fingerprint: "SHA-256 сертификата датчика"
@@ -27,6 +27,9 @@ widget "tablet-monitor" {
   onTap: screen()
 
   source power = android.power every 5s
+  source battery = android.battery
+  source batteryClock = clock every 1m
+  source chargeHistory = android.batteryHistory every 1m
   source system = android.system every 5s
   source net = android.network every 5s
   source cpu = cmd("head -n 1 /proc/stat") every 5s optional
@@ -71,10 +74,14 @@ widget "tablet-monitor" {
     // One snapshot per clock tick, independent of the order in which sources complete.
     samples = samples.drop(max(0, len(samples) + 1 - cap)) + [[linux ? usage : null, ram, down, up, temp, watts]]
   }
+  let batteryTime = max(batteryClock ?? 0, last(chargeHistory)[0] ?? 0)
+  let sinceCharge = batteryTime - 10800
   let cpuHistory = samples.map(s => s[0])
   let ramHistory = samples.map(s => s[1])
-  let downHistory = samples.map(s => s[2])
-  let upHistory = samples.map(s => s[3])
+  let netHistory = samples.filter(s => s[2] != null && s[3] != null)
+  let downHistory = netHistory.map(s => s[2])
+  let upHistory = netHistory.map(s => s[3])
+  let netMax = max(1, (max(downHistory + upHistory) ?? 0) * 1.15)
   let tempHistory = samples.map(s => s[4])
   let powerHistory = samples.map(s => s[5])
   let dense = (tileWidth ?? 250) < 195 || (tileHeight ?? 240) < 200
@@ -113,6 +120,97 @@ widget "tablet-monitor" {
     }
   }
 
+  component Network(detail) {
+    Column {
+      weight: 1
+      fill: detail ? "width" : "height"
+      gap: 2
+      padding: detail ? 10 : dense ? 3 : 5
+      background: alpha(surface, 0.75)
+      border: 1
+      borderColor: alpha(cyan, 0.32)
+      radius: 4 * corners
+      clip: true
+      if detail {
+        Text { text: str.network; style: label }
+      }
+      Row {
+        gap: 3
+        Text { text: "↓ " + downRead; color: cyan; weight: 1; fontSize: detail ? 14 : dense ? 9 : 10; maxLines: 1 }
+        Text { text: "↑ " + upRead; color: blue; weight: 1; fontSize: detail ? 14 : dense ? 9 : 10; align: end; maxLines: 1 }
+      }
+      Box {
+        fill: width
+        weight: detail ? 0 : 1
+        height: detail ? 110 : null
+        Sparkline { values: downHistory; min: 0; max: netMax; color: cyan; thickness: 1.4; fill: true }
+        Sparkline { values: upHistory; min: 0; max: netMax; color: blue; thickness: 1.4; fill: true }
+      }
+    }
+  }
+
+  component BatteryHistory(detail) {
+    let tint = battery.charging ? green : accent
+    Column {
+      weight: 1
+      fill: detail ? "width" : "height"
+      gap: 2
+      padding: detail ? 10 : dense ? 3 : 5
+      background: alpha(surface, 0.75)
+      border: 1
+      borderColor: alpha(tint, 0.32)
+      radius: 4 * corners
+      clip: true
+      Row {
+        align: center
+        gap: 5
+        Canvas {
+          width: 19
+          height: 11
+          rect(0.5, 1, 15, 9, stroke: tint, width: 1, radius: 1.5)
+          rect(16, 3.5, 2, 4, fill: tint, radius: 0.5)
+          if battery.level > 0 {
+            rect(2, 2.5, 12 * battery.level / 100, 6, fill: tint, radius: 0.6)
+          }
+        }
+        if detail {
+          Text { text: str.battery; style: label; weight: 1 }
+        } else {
+          Spacer { weight: 1 }
+        }
+        Text { text: battery == null ? "—" : "${battery.level}%"; color: tint; bold: true; fontSize: detail ? 16 : dense ? 10 : 13; maxLines: 1 }
+      }
+      Canvas {
+        fill: width
+        weight: detail ? 0 : 1
+        height: detail ? 90 : null
+        for i in range(3) {
+          let y = (i + 1) * height / 4
+          line(0, y, width, y, stroke: alpha(muted, 0.23))
+        }
+        for i in range(len(chargeHistory)) {
+          let p = chargeHistory[i]
+          let previous = i > 0 ? chargeHistory[i - 1] : null
+          let x = 2 + (width - 4) * (p[0] - sinceCharge) / 10800
+          let y = 2 + (height - 4) * (1 - p[1] / 100)
+          let strokeColor = p[2] ? green : accent
+          if previous != null && !p[3] && p[0] >= sinceCharge {
+            let previousX = 2 + (width - 4) * max(0, previous[0] - sinceCharge) / 10800
+            let previousY = 2 + (height - 4) * (1 - previous[1] / 100)
+            line(previousX, previousY, x, y, stroke: strokeColor, width: 1.5, cap: round)
+          } else if p[0] >= sinceCharge {
+            circle(x, y, 1.4, fill: strokeColor)
+          }
+        }
+      }
+      Row {
+        gap: 3
+        Text { text: str.hours; weight: 1; color: muted; fontSize: detail ? 11 : 9; maxLines: 1 }
+        Text { text: str.now; color: muted; fontSize: detail ? 11 : 9; maxLines: 1 }
+      }
+    }
+  }
+
   Column {
     fill: true
     gap: gapSize
@@ -127,8 +225,8 @@ widget "tablet-monitor" {
       fill: width
       weight: 1
       gap: gapSize
-      Metric { label: str.rx; reading: downRead; points: downHistory; floor: 0; ceiling: null; tint: cyan }
-      Metric { label: str.tx; reading: upRead; points: upHistory; floor: 0; ceiling: null; tint: blue }
+      Network { detail: false }
+      BatteryHistory { detail: false }
     }
     Row {
       fill: width
@@ -139,7 +237,7 @@ widget "tablet-monitor" {
     }
   }
 
-  component Chart(label, reading, points, floor, ceiling, tint, suffix, bytes, note) {
+  component Chart(label, reading, points, floor, ceiling, tint, suffix, note) {
     let valid = points.filter(v => v != null)
     let low = len(valid) == 0 ? null : min(valid)
     let high = len(valid) == 0 ? null : max(valid)
@@ -157,7 +255,7 @@ widget "tablet-monitor" {
       }
       if len(valid) > 0 {
         Sparkline { values: points; min: floor; max: ceiling; color: tint; area: alpha(tint, 0.22); thickness: 2; fill: width; height: 90 }
-        Text { text: str.range + " " + (bytes ? fmtBytes(low) : fixed(low, 1)) + "–" + (bytes ? fmtBytes(high) : fixed(high, 1)) + suffix + "  ·  " + str.mean + " " + (bytes ? fmtBytes(average) : fixed(average, 1)) + suffix; style: small; color: muted }
+        Text { text: str.range + " " + fixed(low, 1) + "–" + fixed(high, 1) + suffix + "  ·  " + str.mean + " " + fixed(average, 1) + suffix; style: small; color: muted }
       }
       if note != "" {
         Text { text: note; style: small; color: muted }
@@ -171,12 +269,12 @@ widget "tablet-monitor" {
       gap: 8
       scroll: true
       Text { text: str.samples(len(samples)); style: small; color: muted }
-      Chart { label: "CPU"; reading: cpuRead; points: cpuHistory; floor: 0; ceiling: 100; tint: accent; suffix: "%"; bytes: false; note: linux ? str.cpuScope : str.noCpu }
-      Chart { label: str.memory; reading: ramRead; points: ramHistory; floor: 0; ceiling: 100; tint: purple; suffix: "%"; bytes: false; note: system.memory.total > 0 ? fmtBytes(system.memory.used) + " / " + fmtBytes(system.memory.total) : "" }
-      Chart { label: str.rx; reading: downRead; points: downHistory; floor: 0; ceiling: null; tint: cyan; suffix: "/s"; bytes: true; note: "" }
-      Chart { label: str.tx; reading: upRead; points: upHistory; floor: 0; ceiling: null; tint: blue; suffix: "/s"; bytes: true; note: "" }
-      Chart { label: str.temp; reading: tempRead; points: tempHistory; floor: 20; ceiling: 100; tint: orange; suffix: " °C"; bytes: false; note: temp == null ? str.noTemp : "" }
-      Chart { label: powerLabel; reading: powerRead; points: powerHistory; floor: 0; ceiling: null; tint: green; suffix: " W"; bytes: false; note: str.wattsNote }
+      Chart { label: "CPU"; reading: cpuRead; points: cpuHistory; floor: 0; ceiling: 100; tint: accent; suffix: "%"; note: linux ? str.cpuScope : str.noCpu }
+      Chart { label: str.memory; reading: ramRead; points: ramHistory; floor: 0; ceiling: 100; tint: purple; suffix: "%"; note: system.memory.total > 0 ? fmtBytes(system.memory.used) + " / " + fmtBytes(system.memory.total) : "" }
+      Network { detail: true }
+      BatteryHistory { detail: true }
+      Chart { label: str.temp; reading: tempRead; points: tempHistory; floor: 20; ceiling: 100; tint: orange; suffix: " °C"; note: temp == null ? str.noTemp : "" }
+      Chart { label: powerLabel; reading: powerRead; points: powerHistory; floor: 0; ceiling: null; tint: green; suffix: " W"; note: str.wattsNote }
       Input { text: sensorUrl; placeholder: str.configure; onSubmit: { sensorUrl = trim(value); refresh() } }
       Input { text: sensorPin; placeholder: str.fingerprint; onSubmit: { sensorPin = trim(value); refresh() } }
       Button { text: str.files; onTap: launcher("widgets") }

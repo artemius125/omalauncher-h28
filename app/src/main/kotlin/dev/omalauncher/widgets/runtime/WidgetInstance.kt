@@ -82,6 +82,8 @@ import dev.omalauncher.widgets.lang.textFields
 
 /** What widgets need from the launcher: guest commands, Android data and actions. */
 interface Services {
+    suspend fun ping(address: String): Value = Null
+
     suspend fun cmd(
         command: String,
         timeoutSeconds: Int,
@@ -1351,6 +1353,10 @@ class WidgetInstance(
         val value: Value =
             when (g.kind) {
                 "clock" -> Num(Math.floor(System.currentTimeMillis() / 1000.0))
+                "ping" -> {
+                    val target = eval(requireNotNull(g.arg), root, g.name)
+                    target.textOrNull()?.let { services.ping(it) } ?: Null
+                }
                 "cmd", "http" -> {
                     val address = requireNotNull(g.arg)
                     val request = eval(address, root, g.name)

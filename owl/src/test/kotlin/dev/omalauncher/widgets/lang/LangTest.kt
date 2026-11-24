@@ -291,6 +291,22 @@ class LangTest {
         assertTrue(compileError("widget {\nsource w = http(\"file:///etc/passwd\")\nText { text: w }\n}").contains("http:// or https://"))
     }
 
+    @Test fun localPingIsAndroidOnlyAndLimitedToOneCheckPerMinute() {
+        val source = """
+            widget {
+                meta { owl: 29 }
+                source host = ping("192.168.1.5") every 1s
+                Text { text: host.online }
+            }
+        """.trimIndent()
+        val program = Compiler.compile(source)
+        val ping = program.globals.single() as Global.Source
+        assertEquals("ping", ping.kind)
+        assertEquals(60.0, ping.every, 0.0)
+        assertFalse(program.needsLinux)
+        assertTrue(compileError(source.replace("owl: 29", "owl: 28")).contains("ping needs owl 29"))
+    }
+
     @Test fun postSendsFromHandlers() {
         val p =
             Compiler.compile(

@@ -26,11 +26,12 @@ work without Launcher3’s Quickstep, root, or Shizuku.
   leaving the Linux session available. A Linux app can still ask you to save
   unsaved work.
 - **OWL dashboard.** Page 1 has a one-cell Linux session switch. The tablet
-  monitor groups six charts for CPU, RAM, network receive and send, battery
-  power and optional Mac mini CPU temperature. Tap it for the last 120
-  samples, range and average, and to edit live OWL files in Oma Files. The
-  Mac mini tile checks up to three HTTPS endpoints with optional certificate
-  pins. To set up the Intel Mac temperature source, see
+  monitor overlays network receive and send on one scale and plots up to
+  three hours of recorded battery charge. It also shows CPU, RAM, power, and
+  optional Mac mini CPU temperature. Tap to inspect the graphs and edit live
+  OWL files. The one-cell devices tile checks up to three local IP addresses
+  once a minute while its home page or a neighbor is active. Tap it to enter
+  the addresses. To set up the Intel Mac temperature source, see
   [the read-only sensor endpoint](#mac-mini-cpu-temperature).
   The calendar reads Android events when allowed. The weather tile keeps its
   last forecast when updating fails and shows the failure in its details.

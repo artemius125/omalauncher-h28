@@ -26,6 +26,7 @@ import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.graphics.ImageBitmap
 import dev.omalauncher.BuildConfig
 import android.os.Process
+import android.net.InetAddresses
 import android.net.TrafficStats
 import android.os.SystemClock
 import android.os.UserHandle
@@ -90,6 +91,7 @@ import dev.omalauncher.ui.home.allApps
 import dev.omalauncher.ui.home.appIconOf
 import dev.omalauncher.ui.home.open
 import dev.omalauncher.ui.home.recentApps
+import dev.omalauncher.widgets.runtime.BatteryHistory
 import dev.omalauncher.widgets.runtime.battery
 import dev.omalauncher.widgets.runtime.AirPods
 import dev.omalauncher.widgets.runtime.Alarm
@@ -192,6 +194,7 @@ class WidgetServices(
     /** android.airpods and airpods(...); each activity that shows widgets lets it ask for Bluetooth while it's in front. */
     val airpods = AirPods(context, scope)
     private val panels = SystemPanels(context)
+    private val batteryHistory = BatteryHistory(context)
 
     /** Opens launcher screens ("style" or "themes", "agents", "store" or "store:apps", "drawer"); set by the UI. */
     var launcherAction: ((String) -> Unit)? = null
@@ -224,9 +227,20 @@ class WidgetServices(
         onLine: (String) -> Unit,
     ) = streams.collect(command, onLine)
 
+    override suspend fun ping(address: String): Value =
+        withContext(Dispatchers.IO) {
+            if (LocalNetwork.missing(context)) return@withContext Null
+            val ip = runCatching { InetAddresses.parseNumericAddress(address) }.getOrNull()
+                ?.takeIf { it.isSiteLocalAddress || it.isLinkLocalAddress || (it.address.size == 16 && (it.address[0].toInt() and 0xfe) == 0xfc) }
+                ?: return@withContext Null
+            val reachable = runCatching { ip.isReachable(1_500) }.getOrDefault(false)
+            Obj(mapOf("address" to Str(address), "online" to bool(reachable)))
+        }
+
     override fun android(name: String): Value =
         when (name) {
             "battery" -> battery(context)
+            "batteryHistory" -> batteryHistory.value()
             "power" -> power()
             "device" -> device()
             "system" -> system()
