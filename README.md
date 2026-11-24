@@ -28,8 +28,8 @@ work without Launcher3’s Quickstep, root, or Shizuku.
 - **OWL dashboard.** Page 1 has a one-cell Linux session switch. The tablet
   monitor overlays network receive and send on one scale and plots up to
   three hours of recorded battery charge with a remaining-time estimate based
-  on recent discharge. It also shows CPU, RAM, power, and
-  tablet thermal status. Tap to inspect the graphs and edit live
+  on the charge counter and averaged current, with level history as a
+  fallback. It also shows CPU, RAM, power, and tablet thermal status. Tap to inspect the graphs and edit live
   OWL files. The one-cell availability tile checks devices and web services once
   a minute while its page or a neighbor is active. Tap to add, edit or delete
   IP addresses, domain names and HTTPS URLs.

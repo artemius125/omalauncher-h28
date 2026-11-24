@@ -3,7 +3,7 @@ widget "tablet-monitor" {
   order: 1
   size: 3x3
   minSize: 2x2
-  meta { owl: 29; description: "Six live charts for CPU, memory, network, tablet thermal state and battery power." }
+  meta { owl: 31; description: "Six live charts for CPU, memory, network, tablet thermal state and battery power." }
 
   strings {
     en {
@@ -13,9 +13,10 @@ widget "tablet-monitor" {
       noTemp: "The tablet exposes thermal status to OMA. CPU degrees are unavailable."
       stages: ["normal", "light", "moderate", "severe", "critical", "emergency", "shutdown"]
       batteryWindow: "battery · last 3 hours"; batteryWaiting: "History is collecting"; percentagePoints: "pp"
-      etaPending: "Estimating…"; etaCharging: "Charging"; etaPlugged: "Plugged in"
+      etaPending: "Estimating…"; etaCharging: "Charging"; etaPlugged: "Plugged in"; etaShort: "< 5 min"
       eta: m => m < 60 ? "≈ ${m} min" : m % 60 == 0 ? "≈ ${floor(m / 60)} h" : "≈ ${floor(m / 60)} h ${m % 60} min"
-      etaNote: "Estimated time remaining at the recent battery drain rate."
+      etaHistory: "Estimate from the recent battery level history."
+      etaMeasured: (charge, current) => "At the recent load · ${fmtNum(charge)} mAh left / ${fmtNum(current)} mA average."
       samples: n => "${n} samples · every 5 s while monitoring"; range: "range"; mean: "average"
       wattsNote: "Battery power for the whole tablet."
     }
@@ -26,9 +27,10 @@ widget "tablet-monitor" {
       noTemp: "Планшет передаёт OMA уровень нагрева. Градусы ЦП недоступны."
       stages: ["норма", "лёгкий", "средний", "сильный", "критический", "авария", "выключение"]
       batteryWindow: "батарея · последние 3 часа"; batteryWaiting: "История накапливается"; percentagePoints: "п. п."
-      etaPending: "Оценка…"; etaCharging: "Заряжается"; etaPlugged: "От сети"
+      etaPending: "Оценка…"; etaCharging: "Заряжается"; etaPlugged: "От сети"; etaShort: "< 5 мин"
       eta: m => m < 60 ? "≈ ${m} мин" : m % 60 == 0 ? "≈ ${floor(m / 60)} ч" : "≈ ${floor(m / 60)} ч ${m % 60} мин"
-      etaNote: "Остаток времени при недавнем темпе разрядки."
+      etaHistory: "Оценка по недавней истории заряда."
+      etaMeasured: (charge, current) => "При недавней нагрузке · ${fmtNum(charge)} мА·ч осталось / ${fmtNum(current)} мА в среднем."
       samples: n => "${n} замеров · раз в 5 с во время мониторинга"; range: "диапазон"; mean: "среднее"
       wattsNote: "Мощность на аккумуляторе всего планшета."
     }
@@ -101,10 +103,12 @@ widget "tablet-monitor" {
                  s.after[0] > s.before[0] && s.after[1] < s.before[1])
   let dischargeSeconds = sum(drops.map(s => s.after[0] - s.before[0]))
   let dischargePercent = sum(drops.map(s => s.before[1] - s.after[1]))
-  let rawMinutes = dischargeSeconds >= 900 && dischargePercent >= 2 ? battery.level * dischargeSeconds / (60 * dischargePercent) : null
-  let etaMinutes = battery.level == 0 ? 0 : rawMinutes == null || rawMinutes > 4320 ? null : max(5, 5 * round(rawMinutes / 5))
+  let historyMinutes = dischargeSeconds >= 900 && dischargePercent >= 2 ? battery.level * dischargeSeconds / (60 * dischargePercent) : null
+  let rawMinutes = power.discharge.minutes ?? historyMinutes
+  let etaStep = rawMinutes < 60 ? 5 : 15
+  let etaMinutes = battery.level == 0 ? 0 : rawMinutes == null || rawMinutes > 4320 ? null : max(5, etaStep * round(rawMinutes / etaStep))
   let etaText = battery.charging ? str.etaCharging : battery.plugged != null ? str.etaPlugged :
-                etaMinutes == null ? str.etaPending : str.eta(etaMinutes)
+                etaMinutes == null ? str.etaPending : etaMinutes > 0 && rawMinutes < 5 ? str.etaShort : str.eta(etaMinutes)
   let etaColor = battery == null ? muted : battery.level >= 45 ? green : battery.level >= 20 ? yellow : red
   let powerHistory = samples.map(s => s[5])
   let dense = (tileWidth ?? 250) < 195 || (tileHeight ?? 240) < 200
@@ -247,7 +251,7 @@ widget "tablet-monitor" {
       Text { text: etaText; color: etaColor; bold: true; fontSize: detail ? 16 : dense ? 9 : 11; maxLines: 1 }
       if detail {
         if !battery.charging && battery.plugged == null && etaMinutes != null {
-          Text { text: str.etaNote; style: small; color: muted }
+          Text { text: power.discharge == null ? str.etaHistory : str.etaMeasured(power.discharge.charge, power.discharge.current); style: small; color: muted }
         }
         Row {
           Text { text: battery.charging ? str.charge : str.draw; color: tint; weight: 1; style: small }

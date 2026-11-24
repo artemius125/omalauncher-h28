@@ -95,6 +95,7 @@ import dev.omalauncher.ui.home.appIconOf
 import dev.omalauncher.ui.home.open
 import dev.omalauncher.ui.home.recentApps
 import dev.omalauncher.widgets.runtime.BatteryHistory
+import dev.omalauncher.widgets.runtime.BatteryDischarge
 import dev.omalauncher.widgets.runtime.battery
 import dev.omalauncher.widgets.runtime.AirPods
 import dev.omalauncher.widgets.runtime.Alarm
@@ -202,6 +203,7 @@ class WidgetServices(
     val airpods = AirPods(context, scope)
     private val panels = SystemPanels(context)
     private val batteryHistory = BatteryHistory(context)
+    private val batteryDischarge = BatteryDischarge()
 
     /** Opens launcher screens ("style" or "themes", "agents", "store" or "store:apps", "drawer"); set by the UI. */
     var launcherAction: ((String) -> Unit)? = null
@@ -738,21 +740,30 @@ class WidgetServices(
         // battery holds more than 20 mAh until it's all but empty, so a smaller number is already in milli.
         fun milli(v: Int) = if (abs(v) < 20_000) v.toDouble() else v / 1000.0
         // Into the battery is positive. Some phones say it the other way round, which the direction it must flow shows.
-        fun current(id: Int) =
-            property(id)?.let(::milli)?.let { if ((charging && it < 0) || (onBattery && it > 0)) -it else it }?.roundToInt()
-        val now = current(BatteryManager.BATTERY_PROPERTY_CURRENT_NOW)
+        fun current(raw: Int?) =
+            raw?.let(::milli)?.let { if ((charging && it < 0) || (onBattery && it > 0)) -it else it }?.roundToInt()
+        val rawCurrent = property(BatteryManager.BATTERY_PROPERTY_CURRENT_NOW)
+        val rawAverage = property(BatteryManager.BATTERY_PROPERTY_CURRENT_AVERAGE)
+        val rawCharge = property(BatteryManager.BATTERY_PROPERTY_CHARGE_COUNTER)?.takeIf { it > 0 }
+        val now = current(rawCurrent)
         val voltage = intent?.getIntExtra(BatteryManager.EXTRA_VOLTAGE, -1)?.takeIf { it > 0 }?.let { it / 1000.0 }
         // Hidden extras most phones fill in while plugged in, in µA and µV, and 0 otherwise.
         fun charger(name: String) = intent?.getIntExtra(name, 0)?.takeIf { it > 0 && !onBattery }
         val chargeTime = if (Build.VERSION.SDK_INT >= 28) manager?.computeChargeTimeRemaining()?.takeIf { it >= 0 } else null
+        val scale = intent?.getIntExtra(BatteryManager.EXTRA_SCALE, -1)?.takeIf { it > 0 }
+        val level = intent?.getIntExtra(BatteryManager.EXTRA_LEVEL, -1)?.takeIf { it >= 0 }?.let { raw ->
+            scale?.let { raw * 100 / it }
+        }
+        val discharge = batteryDischarge.update(SystemClock.elapsedRealtime(), onBattery && !charging, level, rawCharge, rawCurrent, rawAverage)
         fun num(v: Number?) = v?.let { Num(it.toDouble()) } ?: Null
         return Obj(
             mapOf(
                 "current" to num(now),
-                "currentAvg" to num(current(BatteryManager.BATTERY_PROPERTY_CURRENT_AVERAGE)),
+                "currentAvg" to num(current(rawAverage)),
                 "watts" to num(if (now != null && voltage != null) Math.round(now * voltage / 10.0) / 100.0 else null),
-                "charge" to num(property(BatteryManager.BATTERY_PROPERTY_CHARGE_COUNTER)?.takeIf { it > 0 }?.let(::milli)?.roundToInt()),
+                "charge" to num(rawCharge?.let(::milli)?.roundToInt()),
                 "chargeTime" to num(chargeTime?.let { it / 1000 }),
+                "discharge" to (discharge?.let { Obj(mapOf("minutes" to num(it.minutes), "charge" to num(it.chargeMah), "current" to num(it.currentMa))) } ?: Null),
                 "maxCurrent" to num(charger("max_charging_current")?.let { (it / 1000.0).roundToInt() }),
                 "maxVoltage" to num(charger("max_charging_voltage")?.let { Math.round(it / 100_000.0) / 10.0 }),
             ),
