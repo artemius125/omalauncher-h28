@@ -188,4 +188,7 @@
     <string name="agents_remove">gỡ</string>
     <string name="agents_still_running">%1$s vẫn đang chạy: đóng nó rồi gỡ lại</string>
     <string name="agents_install">cài đặt</string>
+    <string name="style_lock_wallpaper_use">dùng trên màn hình khóa</string>
+    <string name="style_lock_wallpaper_done">đã đặt hình nền màn hình khóa</string>
+    <string name="style_lock_wallpaper_failed">không thể đặt hình nền màn hình khóa</string>
 </resources>

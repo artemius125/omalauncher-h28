@@ -209,7 +209,8 @@ internal val SINCE =
         mapOf("volume(\"request\")" to 25) +
         // owl 26: talking to the agent in Voice about an owl app, to change it.
         mapOf("appAction(\"voice\")" to 26) +
-        mapOf("appAction(\"close\")" to 27)
+        mapOf("appAction(\"close\")" to 27) +
+        listOf("launcher(\"linux:session\")", "launcher(\"widgets\")").associateWith { 28 }
 
 /** A Shader's `uniform shader name;`, an image it samples, named like this in [SINCE]. */
 internal const val SHADER_IMAGE = "uniform shader"

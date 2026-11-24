@@ -84,6 +84,7 @@ import androidx.compose.ui.res.stringResource
 import dev.omalauncher.R
 import dev.omalauncher.Runtime
 import dev.omalauncher.linux.LinuxState
+import dev.omalauncher.linux.Proot
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.foundation.layout.widthIn
@@ -93,6 +94,7 @@ import dev.omalauncher.widgets.editWidgetCommand
 import dev.omalauncher.widgets.fixDependenciesCommand
 import dev.omalauncher.widgets.newOwlCommand
 import dev.omalauncher.ui.BracketAction
+import dev.omalauncher.ui.ConfirmDialog
 import dev.omalauncher.ui.EdgeGap
 import dev.omalauncher.ui.ExtraKeys
 import dev.omalauncher.ui.ExtraKeysHeight
@@ -194,6 +196,7 @@ fun HomeScreen(
     LaunchedEffect(arrange.folder) {
         if (arrange.folder == null && engine.shortcuts.items.any { it.key == state.editing && it.folder != null }) state.editing = null
     }
+    var linuxSessionRequest by remember { mutableStateOf<Boolean?>(null) }
     LaunchedEffect(engine) {
         engine.launcherAction = { action ->
             when (action) {
@@ -203,6 +206,12 @@ fun HomeScreen(
                 "store" -> state.show(SettingsPage.Store)
                 "store:apps" -> state.show(SettingsPage.AppStore)
                 "linux" -> state.show(SettingsPage.Linux)
+                "linux:session" -> when {
+                    runtime.linuxStopped -> linuxSessionRequest = true
+                    runtime.linuxRunning -> linuxSessionRequest = false
+                    else -> state.show(SettingsPage.Linux)
+                }
+                "widgets" -> runtime.openFiles("${Proot.GUEST_HOME}/.config/omalauncher/widgets")
                 "drawer" -> state.open()
                 "settings" -> state.show()
                 // "page:0": turns home to that page, a face left of page 1 too, as Super+1…9 does. What covers home
@@ -216,6 +225,18 @@ fun HomeScreen(
                         state.requestedPage = it
                     }
             }
+        }
+    }
+    linuxSessionRequest?.let { start ->
+        ConfirmDialog(
+            title = stringResource(R.string.linux_session_title),
+            message = stringResource(if (start) R.string.linux_session_stopped else R.string.linux_stop_body),
+            confirm = stringResource(if (start) R.string.linux_start else R.string.linux_stop_confirm),
+            onDismiss = { linuxSessionRequest = null },
+            confirmColor = if (start) Palette.accent else Palette.red,
+        ) {
+            linuxSessionRequest = null
+            if (start) runtime.startLinux() else runtime.stopLinux()
         }
     }
     // Folding or unfolding keeps the page that was showing: unfolded, the pair it's in; folded, the left one of the pair.

@@ -151,4 +151,7 @@
     <string name="agents_remove">hapus</string>
     <string name="agents_still_running">%1$s masih berjalan: tutup dulu, lalu hapus lagi</string>
     <string name="agents_install">instal</string>
+    <string name="style_lock_wallpaper_use">pakai di layar kunci</string>
+    <string name="style_lock_wallpaper_done">wallpaper layar kunci dipasang</string>
+    <string name="style_lock_wallpaper_failed">gagal memasang wallpaper layar kunci</string>
 </resources>

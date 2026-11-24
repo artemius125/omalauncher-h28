@@ -155,4 +155,7 @@
     <string name="agents_remove">rimuovi</string>
     <string name="agents_still_running">%1$s è ancora in esecuzione: chiudilo e poi riprova a rimuoverlo</string>
     <string name="agents_install">installa</string>
+    <string name="style_lock_wallpaper_use">usa nella schermata di blocco</string>
+    <string name="style_lock_wallpaper_done">sfondo di blocco impostato</string>
+    <string name="style_lock_wallpaper_failed">impossibile impostare lo sfondo di blocco</string>
 </resources>

@@ -153,4 +153,7 @@
     <string name="agents_remove">kaldır</string>
     <string name="agents_still_running">%1$s hâlâ çalışıyor: kapat, sonra tekrar kaldır</string>
     <string name="agents_install">yükle</string>
+    <string name="style_lock_wallpaper_use">kilit ekranında kullan</string>
+    <string name="style_lock_wallpaper_done">kilit ekranı duvar kâğıdı ayarlandı</string>
+    <string name="style_lock_wallpaper_failed">kilit ekranı duvar kâğıdı ayarlanamadı</string>
 </resources>

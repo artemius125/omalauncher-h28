@@ -155,4 +155,7 @@
     <string name="agents_remove">remover</string>
     <string name="agents_still_running">%1$s ainda está aberto: feche e remova de novo</string>
     <string name="agents_install">instalar</string>
+    <string name="style_lock_wallpaper_use">usar na tela de bloqueio</string>
+    <string name="style_lock_wallpaper_done">fundo da tela de bloqueio aplicado</string>
+    <string name="style_lock_wallpaper_failed">não foi possível aplicar o fundo da tela de bloqueio</string>
 </resources>

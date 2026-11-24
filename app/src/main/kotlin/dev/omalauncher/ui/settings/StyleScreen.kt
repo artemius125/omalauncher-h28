@@ -1,5 +1,6 @@
 package dev.omalauncher.ui.settings
 
+import android.app.WallpaperManager
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.annotation.StringRes
 import androidx.activity.result.PickVisualMediaRequest
@@ -463,6 +464,35 @@ private fun BackgroundSection(
             )
         } else {
             BasicText("[ ${stringResource(R.string.style_wallpaper_use)} ]", style = Mono.copy(color = Palette.accent))
+        }
+    }
+    store.background?.let { background ->
+        var applying by remember { mutableStateOf(false) }
+        var applied by remember(background) { mutableStateOf<Boolean?>(null) }
+        BracketAction(
+            stringResource(R.string.style_lock_wallpaper_use),
+            Palette.accent,
+            onClick = {
+                if (!applying) {
+                    applying = true
+                    scope.launch {
+                        applied = withContext(Dispatchers.IO) {
+                            runCatching {
+                                val wallpaper = WallpaperManager.getInstance(context)
+                                wallpaper.isWallpaperSupported && wallpaper.isSetWallpaperAllowed &&
+                                    background.inputStream().use { wallpaper.setStream(it, null, true, WallpaperManager.FLAG_LOCK) > 0 }
+                            }.getOrDefault(false)
+                        }
+                        applying = false
+                    }
+                }
+            },
+        )
+        applied?.let { success ->
+            BasicText(
+                stringResource(if (success) R.string.style_lock_wallpaper_done else R.string.style_lock_wallpaper_failed),
+                style = Mono.copy(color = if (success) Palette.green else Palette.red, fontSize = TextSize.Small),
+            )
         }
     }
     removing?.let { file ->

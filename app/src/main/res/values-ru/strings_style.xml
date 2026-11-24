@@ -157,4 +157,7 @@
     <string name="agents_remove">удалить</string>
     <string name="agents_still_running">%1$s ещё работает: закройте его и попробуйте удалить снова</string>
     <string name="agents_install">установить</string>
+    <string name="style_lock_wallpaper_use">на экран блокировки</string>
+    <string name="style_lock_wallpaper_done">обои экрана блокировки установлены</string>
+    <string name="style_lock_wallpaper_failed">не удалось установить обои экрана блокировки</string>
 </resources>

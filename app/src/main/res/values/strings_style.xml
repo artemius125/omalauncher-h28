@@ -190,4 +190,7 @@
     <string name="agents_remove">remove</string>
     <string name="agents_still_running">%1$s is still running: close it, then remove it again</string>
     <string name="agents_install">install</string>
+    <string name="style_lock_wallpaper_use">use on lock screen</string>
+    <string name="style_lock_wallpaper_done">lock screen wallpaper set</string>
+    <string name="style_lock_wallpaper_failed">could not set lock screen wallpaper</string>
 </resources>

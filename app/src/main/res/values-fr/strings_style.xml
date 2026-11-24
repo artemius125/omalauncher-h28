@@ -155,4 +155,7 @@
     <string name="agents_remove">désinstaller</string>
     <string name="agents_still_running">%1$s tourne encore : ferme-le, puis désinstalle-le à nouveau</string>
     <string name="agents_install">installer</string>
+    <string name="style_lock_wallpaper_use">utiliser sur l’écran de verrouillage</string>
+    <string name="style_lock_wallpaper_done">fond de verrouillage appliqué</string>
+    <string name="style_lock_wallpaper_failed">impossible d’appliquer le fond de verrouillage</string>
 </resources>

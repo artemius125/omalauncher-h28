@@ -151,4 +151,7 @@
     <string name="agents_remove">削除</string>
     <string name="agents_still_running">%1$s はまだ実行中です。閉じてから、もう一度削除してください</string>
     <string name="agents_install">インストール</string>
+    <string name="style_lock_wallpaper_use">ロック画面に使う</string>
+    <string name="style_lock_wallpaper_done">ロック画面の壁紙を設定しました</string>
+    <string name="style_lock_wallpaper_failed">ロック画面の壁紙を設定できませんでした</string>
 </resources>

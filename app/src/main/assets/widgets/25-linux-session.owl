@@ -1,0 +1,21 @@
+widget "linux-session" {
+  page: 1
+  order: 4
+  size: 2x2
+  minSize: 2x2
+  meta { owl: 28; description: "Start or stop the Linux session, or edit OWL files in Oma Files." }
+
+  strings {
+    en { running: "running"; stopped: "inactive"; files: "OWL files" }
+    ru { running: "работает"; stopped: "неактивен"; files: "файлы OWL" }
+  }
+
+  Column {
+    fill: true
+    justify: center
+    gap: 4
+    Text { text: linux ? "● Linux" : "○ Linux"; color: linux ? green : foreground; style: title; maxLines: 1; onTap: launcher("linux:session") }
+    Text { text: str[linux ? "running" : "stopped"]; style: small; maxLines: 1; onTap: launcher("linux:session") }
+    Button { text: str.files; onTap: launcher("widgets") }
+  }
+}

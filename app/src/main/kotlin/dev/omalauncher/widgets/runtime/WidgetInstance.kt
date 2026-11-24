@@ -1352,7 +1352,9 @@ class WidgetInstance(
             when (g.kind) {
                 "clock" -> Num(Math.floor(System.currentTimeMillis() / 1000.0))
                 "cmd", "http" -> {
-                    val target = eval(g.arg!!, root, g.name).toString()
+                    val address = requireNotNull(g.arg)
+                    val request = eval(address, root, g.name)
+                    val target = request.toString()
                     try {
                         val r =
                             if (g.kind == "http") {
@@ -1364,6 +1366,8 @@ class WidgetInstance(
                             }
                         // Up to a megabyte of JSON: parsed off the main thread.
                         val out = if (g.json) withContext(Dispatchers.Default) { Json.parseOrText(r.out) } else Str(r.out)
+                        // An edited URL already describes a different request on screen.
+                        if (g.kind == "http" && address.const == null && eval(address, root, g.name) != request) return false
                         // A response too big now is as big in 30 seconds.
                         fetched = g.kind != "http" || ok(g, r) || r.err == HTTP_TOO_BIG
                         if (g.status) {

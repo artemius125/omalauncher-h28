@@ -25,6 +25,15 @@ work without Launcher3’s Quickstep, root, or Shizuku.
   Closing a Linux window sends a standard Wayland close request to that window,
   leaving the Linux session available. A Linux app can still ask you to save
   unsaved work.
+- **OWL dashboard.** Page 1 has a Linux session control with direct access
+  to its editable OWL files in Oma Files. Page 2 has a tablet monitor
+  (network throughput, battery temperature and CPU activity visible to the
+  Linux guest), a three-service HTTPS status tile, and a calendar that reads
+  Android events when allowed. Tap the Mac mini tile to enter the HTTPS
+  endpoints for your own services. The stock weather tile keeps its last
+  forecast when updating fails and shows the failure in its details.
+- **Lock screen wallpaper.** Style can apply the selected Omarchy background
+  to Android’s lock screen separately.
 
 To try these features on Android 11, set Omalauncher as the default home app
 and enable **OMA gestures** in Android’s Accessibility settings. The service

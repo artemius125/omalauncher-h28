@@ -151,4 +151,7 @@
     <string name="agents_remove">移除</string>
     <string name="agents_still_running">%1$s 仍在运行：请先关闭，再移除一次</string>
     <string name="agents_install">安装</string>
+    <string name="style_lock_wallpaper_use">用作锁屏壁纸</string>
+    <string name="style_lock_wallpaper_done">已设置锁屏壁纸</string>
+    <string name="style_lock_wallpaper_failed">无法设置锁屏壁纸</string>
 </resources>

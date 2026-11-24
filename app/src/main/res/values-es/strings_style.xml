@@ -155,4 +155,7 @@
     <string name="agents_remove">desinstalar</string>
     <string name="agents_still_running">%1$s sigue abierto: ciérralo y vuelve a desinstalarlo</string>
     <string name="agents_install">instalar</string>
+    <string name="style_lock_wallpaper_use">usar en la pantalla de bloqueo</string>
+    <string name="style_lock_wallpaper_done">fondo de bloqueo aplicado</string>
+    <string name="style_lock_wallpaper_failed">no se pudo aplicar el fondo de bloqueo</string>
 </resources>

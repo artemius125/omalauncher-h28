@@ -27,7 +27,7 @@ class Compiler private constructor(
          * instead of failing on what they don't know. Bump it with every
          * addition a widget could depend on: nodes, properties, builtins.
          */
-        const val LEVEL = 27
+        const val LEVEL = 28
         private const val MAX_ASSET_BYTES = 2 shl 20
 
         /** Pages as far out as a file can ask for; past Int's range, the pages either side of them would wrap. */
@@ -1511,6 +1511,11 @@ class Compiler private constructor(
                     w.forms[c]?.let { (arity, usage) -> if (call.args.size !in arity) fail("it's $usage", call.pos) }
                     // A word newer than its action, like notification("reply"), needs the level it came with.
                     if ("${call.name}(\"$c\")" in SINCE) since("${call.name}(\"$c\")", call.pos)
+                }
+                if (call.name == "launcher") {
+                    val word = (args.firstOrNull()?.const as? Str)?.v
+                    if (word != null) since("launcher(\"$word\")", call.pos)
+                    if (word == "linux:session" && handlerName != "onTap") fail("open the Linux session control in onTap", call.pos)
                 }
                 since(call.name, call.pos)
                 if (call.name == "web" && webAt == null) webAt = call.pos

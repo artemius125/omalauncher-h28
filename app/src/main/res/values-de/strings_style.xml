@@ -153,4 +153,7 @@
     <string name="agents_remove">deinstallieren</string>
     <string name="agents_still_running">%1$s läuft noch: schließ es und deinstalliere es dann noch mal</string>
     <string name="agents_install">installieren</string>
+    <string name="style_lock_wallpaper_use">für sperrbildschirm verwenden</string>
+    <string name="style_lock_wallpaper_done">sperrbildschirmhintergrund gesetzt</string>
+    <string name="style_lock_wallpaper_failed">sperrbildschirmhintergrund konnte nicht gesetzt werden</string>
 </resources>

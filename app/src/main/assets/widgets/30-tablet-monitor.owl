@@ -1,0 +1,47 @@
+widget "tablet-monitor" {
+  page: 2
+  order: 1
+  size: 3x3
+  minSize: 3x3
+  meta { owl: 16; description: "Recent network rate, battery temperature and the CPU activity visible to the Linux guest." }
+
+  strings {
+    en { title: "tablet"; cpu: "CPU · guest view"; battery: "battery" }
+    ru { title: "планшет"; cpu: "ЦП · из Linux"; battery: "батарея" }
+  }
+
+  source battery = android.battery
+  source net = android.network every 5s
+  source cpu = cmd("head -n 1 /proc/stat") every 5s optional
+  state down = null
+  state up = null
+  state usage = null
+
+  on net {
+    let seconds = value.uptime - old.uptime
+    down = old.rx != null && value.rx != null && value.rx >= old.rx && seconds > 0 ? (value.rx - old.rx) / seconds : null
+    up = old.tx != null && value.tx != null && value.tx >= old.tx && seconds > 0 ? (value.tx - old.tx) / seconds : null
+  }
+
+  on cpu {
+    let a = words(old)
+    let b = words(value)
+    let busy = num(b[1]) + num(b[2]) + num(b[3]) - num(a[1]) - num(a[2]) - num(a[3])
+    let idle = num(b[4]) + num(b[5]) - num(a[4]) - num(a[5])
+    usage = a[0] == "cpu" && b[0] == "cpu" && busy >= 0 && idle >= 0 && busy + idle > 0 ? 100 * busy / (busy + idle) : null
+  }
+
+  let cpuHistory = history(usage, 24)
+  let netHistory = history(down, 24)
+
+  Column {
+    fill: true
+    gap: 4
+    Text { text: str.title; style: muted; maxLines: 1 }
+    Text { text: str.cpu + " · " + (!linux || usage == null ? "—" : "${round(usage)}%"); style: small; maxLines: 1 }
+    Sparkline { values: linux ? cpuHistory : []; min: 0; max: 100; area: true; color: accent; fill: width; weight: 1 }
+    Text { text: "↓ " + (down == null ? "—" : fmtBytes(down) + "/s") + "   ↑ " + (up == null ? "—" : fmtBytes(up) + "/s"); style: small; maxLines: 1 }
+    Sparkline { values: netHistory; min: 0; area: true; color: cyan; fill: width; weight: 1 }
+    Text { text: str.battery + " · " + (battery.temp == null ? "—" : "${battery.temp} °C"); style: small; maxLines: 1 }
+  }
+}

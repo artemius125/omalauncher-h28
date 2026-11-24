@@ -1360,6 +1360,27 @@ class LangTest {
         assertTrue(compileError(src.replace("owl: 21", "owl: 20")).contains("every frame needs owl 21"))
     }
 
+    @Test fun launcherSessionAndWidgetFolder() {
+        val src = """
+            widget {
+                meta { owl: 28 }
+                Button { text: "Linux"; onTap: launcher("linux:session") }
+                Button { text: "OWL files"; onTap: launcher("widgets") }
+            }
+        """.trimIndent()
+        val program = Compiler.compile(src)
+        val host = TestHost(program)
+        assertTrue(!program.needsLinux)
+        for (node in program.root) {
+            (node as WNode.Element).handlers.getValue("onTap").run(Env.root(host), listOf(Num(0.0), Num(0.0)))
+        }
+        assertEquals(listOf("launcher linux:session", "launcher widgets"), host.actions)
+        val older = src.replace("owl: 28", "owl: 27")
+        assertTrue(compileError(older).contains("needs owl 28"))
+        assertTrue(compileError(older.replace("linux:session", "linux")).contains("needs owl 28"))
+        assertTrue(compileError(src.replace("widget {", "widget {\n every 1m { launcher(\"linux:session\") }")).contains("open the Linux session control in onTap"))
+    }
+
     @Test fun androidCalendarAskedForOnATap() {
         val src = "widget {\n meta { owl: 18 }\n source agenda = android.calendar\n Text { text: agenda.granted ? \"events\" : \"allow\"; onTap: calendar(\"request\") } }"
         val p = Compiler.compile(src)

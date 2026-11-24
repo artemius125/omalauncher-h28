@@ -1,0 +1,66 @@
+widget "service-status" {
+  page: 2
+  order: 2
+  size: 3x3
+  minSize: 3x2
+  meta { owl: 16; description: "Check up to three HTTPS health endpoints from Android. Tap the tile to configure them." }
+
+  strings {
+    en { title: "Mac mini"; set: "add HTTPS addresses"; check: "check now"; pending: "checking…"; failed: "connection failed"; invalid: "use an HTTPS URL" }
+    ru { title: "Mac mini"; set: "добавить HTTPS-адреса"; check: "проверить сейчас"; pending: "проверка…"; failed: "нет соединения"; invalid: "нужен URL с HTTPS" }
+  }
+
+  state firstUrl = "" persist
+  state secondUrl = "" persist
+  state thirdUrl = "" persist
+  source firstCheck = http(startsWith(firstUrl, "https://") ? firstUrl : null) every 2m timeout 8s status
+  source secondCheck = http(startsWith(secondUrl, "https://") ? secondUrl : null) every 2m timeout 8s status
+  source thirdCheck = http(startsWith(thirdUrl, "https://") ? thirdUrl : null) every 2m timeout 8s status
+
+  let endpoints = [firstUrl, secondUrl, thirdUrl]
+  let results = [firstCheck, secondCheck, thirdCheck]
+  let configured = endpoints.filter(s => s != "")
+
+  component CheckRow(target, result, slot) {
+    let host = split(sub(target, 8), "/")[0]
+    let ready = startsWith(target, "https://")
+    let code = result.code
+    Row {
+      gap: 6
+      Text { text: result == null || !ready ? "○" : "●"; color: result == null || !ready ? muted : result.ok ? green : red }
+      Text { text: ready ? host : "#${slot}"; weight: 1; maxLines: 1; style: small }
+      Text { text: !ready ? str.invalid : result == null ? str.pending : code > 0 ? "HTTP ${code}" : str.failed; style: small; maxLines: 1 }
+    }
+  }
+
+  Column {
+    fill: true
+    gap: 5
+    Text { text: str.title; style: muted }
+    if len(configured) == 0 {
+      Text { text: str.set; style: small; color: accent; maxLines: 2 }
+    }
+    for i in range(3) key i {
+      if endpoints[i] != "" {
+        CheckRow { target: endpoints[i]; result: results[i]; slot: i + 1 }
+      }
+    }
+  }
+
+  screen {
+    title: str.title
+    Column {
+      gap: 8
+      scroll: true
+      Input { text: firstUrl; placeholder: "https://…/healthz"; onSubmit: { firstUrl = trim(value); refresh() } }
+      Input { text: secondUrl; placeholder: "https://…/healthz"; onSubmit: { secondUrl = trim(value); refresh() } }
+      Input { text: thirdUrl; placeholder: "https://…/healthz"; onSubmit: { thirdUrl = trim(value); refresh() } }
+      Button { text: str.check; onTap: refresh() }
+      for i in range(3) key i {
+        if endpoints[i] != "" {
+          CheckRow { target: endpoints[i]; result: results[i]; slot: i + 1 }
+        }
+      }
+    }
+  }
+}
