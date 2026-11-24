@@ -3,28 +3,38 @@ widget "tablet-monitor" {
   order: 1
   size: 3x3
   minSize: 2x2
-  meta { owl: 28; description: "Six live charts for CPU, memory, network, battery temperature and power." }
+  meta { owl: 28; description: "Six live charts for CPU, memory, network, Mac mini CPU temperature and battery power." }
 
   strings {
     en {
-      title: "tablet"; memory: "RAM"; rx: "↓ RX"; tx: "↑ TX"; temp: "battery °C"; power: "power"; files: "OWL files"
-      cpuScope: "CPU shows what this Linux guest sees. On H28 this is the launcher and its Linux processes."
-      gpuScope: "GPU load is unavailable to apps on this device."
+      title: "tablet history"; memory: "RAM"; rx: "↓ RX"; tx: "↑ TX"; temp: "Mac CPU °C"
+      draw: "draw"; charge: "charge"; power: "battery W"; files: "OWL files"
+      cpuScope: "CPU · launcher and its Linux processes"; noCpu: "CPU history needs Linux running"
+      noTemp: "No Mac CPU temperature"; configure: "Mac CPU sensor HTTPS URL"; fingerprint: "sensor certificate SHA-256"
+      samples: n => "${n} samples · every 5 s while monitoring"; range: "range"; mean: "average"
+      wattsNote: "Battery power for the whole tablet."
     }
     ru {
-      title: "планшет"; memory: "ОЗУ"; rx: "↓ приём"; tx: "↑ отправка"; temp: "АКБ °C"; power: "мощность"; files: "файлы OWL"
-      cpuScope: "ЦП показывает нагрузку, видимую из Linux. На H28 это лаунчер и его Linux-процессы."
-      gpuScope: "Загрузка GPU недоступна приложениям на этом планшете."
+      title: "история планшета"; memory: "ОЗУ"; rx: "↓ приём"; tx: "↑ отправка"; temp: "ЦП Mac °C"
+      draw: "расход"; charge: "заряд"; power: "питание"; files: "файлы OWL"
+      cpuScope: "ЦП · лаунчер и его Linux-процессы"; noCpu: "Для истории ЦП запусти Linux"
+      noTemp: "Нет данных о температуре ЦП Mac"; configure: "HTTPS-адрес датчика ЦП Mac"; fingerprint: "SHA-256 сертификата датчика"
+      samples: n => "${n} замеров · раз в 5 с во время мониторинга"; range: "диапазон"; mean: "среднее"
+      wattsNote: "Мощность на аккумуляторе всего планшета."
     }
   }
 
   onTap: screen()
 
-  source battery = android.battery
   source power = android.power every 5s
   source system = android.system every 5s
   source net = android.network every 5s
   source cpu = cmd("head -n 1 /proc/stat") every 5s optional
+  state sensorUrl = "" persist
+  state sensorPin = "" persist
+  source thermal = http(startsWith(sensorUrl, "https://") ? sensorUrl : null, {}, pin: sensorPin == "" ? null : sensorPin) every 1m timeout 5s json status
+  source clockSample = clock every 5s
+  state samples = []
   state down = null
   state up = null
   state usage = null
@@ -47,12 +57,26 @@ widget "tablet-monitor" {
 
   let ram = system.memory.total > 0 ? 100 * system.memory.used / system.memory.total : null
   let watts = power.watts == null ? null : abs(power.watts)
-  let cpuHistory = history(linux ? usage : null, 40)
-  let ramHistory = history(ram, 40)
-  let downHistory = history(down, 40)
-  let upHistory = history(up, 40)
-  let tempHistory = history(battery.temp, 40)
-  let powerHistory = history(watts, 40)
+  let measuredTemp = num(thermal.out.cpuTempC)
+  let temp = sensorUrl == "" || !thermal.ok || measuredTemp == null || measuredTemp < -20 || measuredTemp > 125 ? null : measuredTemp
+  let powerLabel = power.watts == null || power.watts == 0 ? str.power : power.watts < 0 ? str.draw : str.charge
+  let cpuRead = !linux || usage == null ? "—" : "${round(usage)}%"
+  let ramRead = ram == null ? "—" : "${round(ram)}%"
+  let downRead = down == null ? "—" : fmtBytes(down) + "/s"
+  let upRead = up == null ? "—" : fmtBytes(up) + "/s"
+  let tempRead = temp == null ? "—" : fixed(temp, 1) + "°"
+  let powerRead = watts == null ? "—" : fixed(watts, 1) + " W"
+  let cap = 120
+  on clockSample first {
+    // One snapshot per clock tick, independent of the order in which sources complete.
+    samples = samples.drop(max(0, len(samples) + 1 - cap)) + [[linux ? usage : null, ram, down, up, temp, watts]]
+  }
+  let cpuHistory = samples.map(s => s[0])
+  let ramHistory = samples.map(s => s[1])
+  let downHistory = samples.map(s => s[2])
+  let upHistory = samples.map(s => s[3])
+  let tempHistory = samples.map(s => s[4])
+  let powerHistory = samples.map(s => s[5])
   let dense = (tileWidth ?? 250) < 195 || (tileHeight ?? 240) < 200
   let gapSize = dense ? 3 : 5
 
@@ -96,31 +120,65 @@ widget "tablet-monitor" {
       fill: width
       weight: 1
       gap: gapSize
-      Metric { label: "CPU"; reading: !linux || usage == null ? "—" : "${round(usage)}%"; points: cpuHistory; floor: 0; ceiling: 100; tint: accent }
-      Metric { label: str.memory; reading: ram == null ? "—" : "${round(ram)}%"; points: ramHistory; floor: 0; ceiling: 100; tint: purple }
+      Metric { label: "CPU"; reading: cpuRead; points: cpuHistory; floor: 0; ceiling: 100; tint: accent }
+      Metric { label: str.memory; reading: ramRead; points: ramHistory; floor: 0; ceiling: 100; tint: purple }
     }
     Row {
       fill: width
       weight: 1
       gap: gapSize
-      Metric { label: str.rx; reading: down == null ? "—" : fmtBytes(down) + "/s"; points: downHistory; floor: 0; ceiling: null; tint: cyan }
-      Metric { label: str.tx; reading: up == null ? "—" : fmtBytes(up) + "/s"; points: upHistory; floor: 0; ceiling: null; tint: blue }
+      Metric { label: str.rx; reading: downRead; points: downHistory; floor: 0; ceiling: null; tint: cyan }
+      Metric { label: str.tx; reading: upRead; points: upHistory; floor: 0; ceiling: null; tint: blue }
     }
     Row {
       fill: width
       weight: 1
       gap: gapSize
-      Metric { label: str.temp; reading: battery.temp == null ? "—" : fixed(battery.temp, 1) + "°"; points: tempHistory; floor: 15; ceiling: 55; tint: orange }
-      Metric { label: str.power; reading: watts == null ? "—" : (battery.charging ? "+" : "−") + fixed(watts, 1) + " W"; points: powerHistory; floor: 0; ceiling: null; tint: green }
+      Metric { label: str.temp; reading: tempRead; points: tempHistory; floor: 20; ceiling: 100; tint: orange }
+      Metric { label: powerLabel; reading: powerRead; points: powerHistory; floor: 0; ceiling: null; tint: green }
+    }
+  }
+
+  component Chart(label, reading, points, floor, ceiling, tint, suffix, bytes, note) {
+    let valid = points.filter(v => v != null)
+    let low = len(valid) == 0 ? null : min(valid)
+    let high = len(valid) == 0 ? null : max(valid)
+    let average = len(valid) == 0 ? null : avg(valid)
+    Column {
+      gap: 6
+      padding: 10
+      background: alpha(surface, 0.65)
+      border: 1
+      borderColor: alpha(tint, 0.35)
+      Row {
+        gap: 8
+        Text { text: label; weight: 1; style: label; maxLines: 1 }
+        Text { text: reading; color: tint; style: title; maxLines: 1 }
+      }
+      if len(valid) > 0 {
+        Sparkline { values: points; min: floor; max: ceiling; color: tint; area: alpha(tint, 0.22); thickness: 2; fill: width; height: 90 }
+        Text { text: str.range + " " + (bytes ? fmtBytes(low) : fixed(low, 1)) + "–" + (bytes ? fmtBytes(high) : fixed(high, 1)) + suffix + "  ·  " + str.mean + " " + (bytes ? fmtBytes(average) : fixed(average, 1)) + suffix; style: small; color: muted }
+      }
+      if note != "" {
+        Text { text: note; style: small; color: muted }
+      }
     }
   }
 
   screen {
     title: str.title
     Column {
-      gap: 10
-      Text { text: str.cpuScope; style: small }
-      Text { text: str.gpuScope; style: small }
+      gap: 8
+      scroll: true
+      Text { text: str.samples(len(samples)); style: small; color: muted }
+      Chart { label: "CPU"; reading: cpuRead; points: cpuHistory; floor: 0; ceiling: 100; tint: accent; suffix: "%"; bytes: false; note: linux ? str.cpuScope : str.noCpu }
+      Chart { label: str.memory; reading: ramRead; points: ramHistory; floor: 0; ceiling: 100; tint: purple; suffix: "%"; bytes: false; note: system.memory.total > 0 ? fmtBytes(system.memory.used) + " / " + fmtBytes(system.memory.total) : "" }
+      Chart { label: str.rx; reading: downRead; points: downHistory; floor: 0; ceiling: null; tint: cyan; suffix: "/s"; bytes: true; note: "" }
+      Chart { label: str.tx; reading: upRead; points: upHistory; floor: 0; ceiling: null; tint: blue; suffix: "/s"; bytes: true; note: "" }
+      Chart { label: str.temp; reading: tempRead; points: tempHistory; floor: 20; ceiling: 100; tint: orange; suffix: " °C"; bytes: false; note: temp == null ? str.noTemp : "" }
+      Chart { label: powerLabel; reading: powerRead; points: powerHistory; floor: 0; ceiling: null; tint: green; suffix: " W"; bytes: false; note: str.wattsNote }
+      Input { text: sensorUrl; placeholder: str.configure; onSubmit: { sensorUrl = trim(value); refresh() } }
+      Input { text: sensorPin; placeholder: str.fingerprint; onSubmit: { sensorPin = trim(value); refresh() } }
       Button { text: str.files; onTap: launcher("widgets") }
     }
   }

@@ -3,21 +3,24 @@ widget "service-status" {
   order: 2
   size: 2x2
   minSize: 2x2
-  meta { owl: 16; description: "Check up to three HTTPS health endpoints from Android. Tap the tile to configure them." }
+  meta { owl: 17; description: "Check up to three HTTPS health endpoints from Android. Tap the tile to configure them." }
 
   strings {
-    en { title: "Mac mini"; set: "HTTPS addresses"; check: "check now"; pending: "checking…"; failed: "connection failed"; invalid: "use an HTTPS URL" }
-    ru { title: "Mac mini"; set: "HTTPS-адреса"; check: "проверить сейчас"; pending: "проверка…"; failed: "нет соединения"; invalid: "нужен URL с HTTPS" }
+    en { title: "Mac mini"; set: "HTTPS addresses"; check: "check now"; pending: "checking…"; failed: "connection failed"; invalid: "use an HTTPS URL"; pin: "optional certificate SHA-256" }
+    ru { title: "Mac mini"; set: "HTTPS-адреса"; check: "проверить сейчас"; pending: "проверка…"; failed: "нет соединения"; invalid: "нужен URL с HTTPS"; pin: "SHA-256 сертификата, если нужен" }
   }
 
   onTap: screen()
 
   state firstUrl = "" persist
+  state firstPin = "" persist
   state secondUrl = "" persist
+  state secondPin = "" persist
   state thirdUrl = "" persist
-  source firstCheck = http(startsWith(firstUrl, "https://") ? firstUrl : null) every 2m timeout 8s status
-  source secondCheck = http(startsWith(secondUrl, "https://") ? secondUrl : null) every 2m timeout 8s status
-  source thirdCheck = http(startsWith(thirdUrl, "https://") ? thirdUrl : null) every 2m timeout 8s status
+  state thirdPin = "" persist
+  source firstCheck = http(startsWith(firstUrl, "https://") ? firstUrl : null, {}, pin: firstPin == "" ? null : firstPin) every 2m timeout 8s status
+  source secondCheck = http(startsWith(secondUrl, "https://") ? secondUrl : null, {}, pin: secondPin == "" ? null : secondPin) every 2m timeout 8s status
+  source thirdCheck = http(startsWith(thirdUrl, "https://") ? thirdUrl : null, {}, pin: thirdPin == "" ? null : thirdPin) every 2m timeout 8s status
 
   let endpoints = [firstUrl, secondUrl, thirdUrl]
   let results = [firstCheck, secondCheck, thirdCheck]
@@ -66,8 +69,11 @@ widget "service-status" {
       gap: 8
       scroll: true
       Input { text: firstUrl; placeholder: "https://…/healthz"; onSubmit: { firstUrl = trim(value); refresh() } }
+      Input { text: firstPin; placeholder: str.pin; onSubmit: { firstPin = trim(value); refresh() } }
       Input { text: secondUrl; placeholder: "https://…/healthz"; onSubmit: { secondUrl = trim(value); refresh() } }
+      Input { text: secondPin; placeholder: str.pin; onSubmit: { secondPin = trim(value); refresh() } }
       Input { text: thirdUrl; placeholder: "https://…/healthz"; onSubmit: { thirdUrl = trim(value); refresh() } }
+      Input { text: thirdPin; placeholder: str.pin; onSubmit: { thirdPin = trim(value); refresh() } }
       Button { text: str.check; onTap: refresh() }
       for i in range(3) key i {
         if endpoints[i] != "" {

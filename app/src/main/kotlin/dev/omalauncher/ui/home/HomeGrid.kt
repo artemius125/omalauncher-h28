@@ -2,6 +2,7 @@ package dev.omalauncher.ui.home
 
 import androidx.compose.runtime.CompositionLocalProvider
 import dev.omalauncher.widgets.render.LocalHomeCovered
+import dev.omalauncher.widgets.render.LocalHomePaging
 import dev.omalauncher.widgets.render.LocalLongPressClaim
 import dev.omalauncher.widgets.render.LongPressClaim
 import androidx.compose.runtime.SideEffect
@@ -772,11 +773,12 @@ internal fun HomeGrid(
                 // and composing that one, a face's shaders drawn with it, held up the swipe's first frames. Their animated
                 // widgets wait until some of the page shows.
                 val homeCovered = LocalHomeCovered.current
+                val paging = remember(pager) { { pager.isScrollInProgress } }
                 HorizontalPager(pager, Modifier.fillMaxSize(), beyondViewportPageCount = 2, key = { slots.getOrNull(it)?.first() ?: -it }, userScrollEnabled = !locked) { slot ->
                     val shown = pagesAt(slot, slots)
                     val g = gridFor(shown, grid to wide)
                     val covered = remember(homeCovered, pager, slot) { { homeCovered() || pager.layoutInfo.visiblePagesInfo.none { it.index == slot } } }
-                    CompositionLocalProvider(LocalHomeCovered provides covered) {
+                    CompositionLocalProvider(LocalHomeCovered provides covered, LocalHomePaging provides paging) {
                         // Keys stay on the page showing: the first arrow on home went to the first page made, one of these.
                         Row(Modifier.fillMaxSize().focusProperties { onEnter = { if (slot != pager.currentPage) cancelFocusChange() } }.focusGroup()) {
                             for (page in shown) {

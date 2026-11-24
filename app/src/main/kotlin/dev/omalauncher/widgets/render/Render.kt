@@ -157,6 +157,9 @@ import dev.omalauncher.widgets.lang.textOrNull
 /** Whether the home screen is hidden (drawer, full-screen panel); animated widgets stop ticking while it is. */
 val LocalHomeCovered = staticCompositionLocalOf<() -> Boolean> { { false } }
 
+/** Pause OWL animation frames during home paging while keeping tile content visible. */
+val LocalHomePaging = staticCompositionLocalOf<() -> Boolean> { { false } }
+
 /** Whether a widget screen kept composed is out of sight (see [WidgetScreen]). */
 private val LocalScreenHidden = staticCompositionLocalOf<() -> Boolean> { { false } }
 
@@ -186,7 +189,11 @@ fun WidgetContent(
     val program = inst.program
     SideEffect { inst.setTile(cells?.first, cells?.second, null, null) }
     val density = LocalDensity.current.density
-    if (program.animated) FrameClock(inst, LocalHomeCovered.current)
+    if (program.animated) {
+        val covered = LocalHomeCovered.current
+        val paging = LocalHomePaging.current
+        FrameClock(inst, remember(covered, paging) { { covered() || paging() } })
+    }
     val bg = program.background
     Column(
         modifier

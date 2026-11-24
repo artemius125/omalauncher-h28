@@ -27,8 +27,11 @@ work without Launcher3’s Quickstep, root, or Shizuku.
   unsaved work.
 - **OWL dashboard.** Page 1 has a one-cell Linux session switch. The tablet
   monitor groups six charts for CPU, RAM, network receive and send, battery
-  temperature and power. Tap it for details and to edit live OWL files in Oma
-  Files. The Mac mini tile checks up to three HTTPS endpoints that you enter.
+  power and optional Mac mini CPU temperature. Tap it for the last 120
+  samples, range and average, and to edit live OWL files in Oma Files. The
+  Mac mini tile checks up to three HTTPS endpoints with optional certificate
+  pins. To set up the Intel Mac temperature source, see
+  [the read-only sensor endpoint](#mac-mini-cpu-temperature).
   The calendar reads Android events when allowed. The weather tile keeps its
   last forecast when updating fails and shows the failure in its details.
 - **Lock screen wallpaper.** Style can apply the selected Omarchy background
@@ -111,6 +114,15 @@ yet, no AirPods connected), 2 wrong arguments, 3 the launcher isn't allowed
 it, 4 the launcher isn't running or didn't answer. `omalauncher --help` has the details. The
 coding agents are told about it, so you can ask one to tell you when a long
 task is done. `phone`, its name before 0.20, still works.
+
+### Mac mini CPU temperature
+
+On an Intel Mac running ArtemLab Cooling, `scripts/mac-cpu-telemetry.py`
+serves only the current CPU diode reading as `{"cpuTempC": 36.4}` over
+HTTPS. Run it on the Mac with a certificate and key, an explicit LAN bind
+address and an allowed subnet. Use `--help` for the parameters. Enter
+the HTTPS URL ending in `/temperature` and, for a self-signed certificate,
+its SHA-256 fingerprint in the tablet monitor’s detail screen.
 
 ### Phone files
 
