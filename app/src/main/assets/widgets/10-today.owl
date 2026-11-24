@@ -5,11 +5,10 @@ widget "today" {
   minSize: 2x2
   meta { description: "The date and the weather where you are: a city you type, or the phone's location once you allow it, or else by IP. Tap it for the next 24 hours, three days, wind, UV, sun and moon. Tap °C or °F to switch"; version: "1.9"; license: "MIT"; category: "world"; owl: 18 }
 
-  // What it says, in the phone's language where it has a set. wttr names the sky and the moon in English, and
-  // its own Indonesian misses newer conditions, so other languages name them from wttr's codes.
+  // Localized weather descriptions use the same icon codes as the other stock widgets.
   strings {
     en {
-      refresh: "refresh"; title: "weather"; loading: "weather…"; offline: "weather offline"; city: "city · empty = auto"; here: "use my location"
+      refresh: "refresh"; title: "weather"; loading: "weather…"; offline: "weather offline"; city: "city · empty = auto"; here: "my location"; cityMissing: "City not found"; cityNeeded: "Enter a city for weather"
       feels: "feels"; humidity: "humidity"; rainToday: "rain today"; uv: "uv index"; pressure: "pressure"
       visibility: "visibility"; next24: "next 24 hours"; now: "now"; days: "3 days"; today: "today"
       sunrise: "sunrise"; sunset: "sunset"; moon: "moon"; kmh: "km/h"; yr: "open yr.no ↗"
@@ -21,6 +20,7 @@ widget "today" {
       phase: (phase, lit) => "${lower(phase)} · ${lit}% lit"
     }
     id {
+      cityMissing: "Kota tidak ditemukan"; cityNeeded: "Masukkan kota untuk prakiraan"
       refresh: "muat ulang"; title: "cuaca"; loading: "cuaca…"; offline: "cuaca offline"; city: "kota · kosong = otomatis"; here: "pakai lokasi saya"
       feels: "terasa"; humidity: "kelembapan"; rainToday: "hujan hari ini"; uv: "indeks uv"; pressure: "tekanan"
       visibility: "jarak pandang"; next24: "24 jam ke depan"; now: "kini"; days: "3 hari"; today: "hari ini"
@@ -54,6 +54,7 @@ widget "today" {
       }, phase, lower(phase)) + " · ${lit}% terang"
     }
     es {
+      cityMissing: "Ciudad no encontrada"; cityNeeded: "Indica una ciudad"
       refresh: "actualizar"; title: "clima"; loading: "clima…"; offline: "clima sin conexión"; city: "ciudad · vacío = auto"; here: "usar mi ubicación"
       feels: "sensación"; humidity: "humedad"; rainToday: "lluvia hoy"; uv: "índice uv"; pressure: "presión"
       visibility: "visibilidad"; next24: "próximas 24 horas"; now: "ahora"; days: "3 días"; today: "hoy"
@@ -87,6 +88,7 @@ widget "today" {
       }, phase, lower(phase)) + " · ${lit}% iluminada"
     }
     pt {
+      cityMissing: "Cidade não encontrada"; cityNeeded: "Indique uma cidade"
       refresh: "atualizar"; title: "clima"; loading: "clima…"; offline: "clima offline"; city: "cidade · vazio = auto"; here: "usar minha localização"
       feels: "sensação"; humidity: "umidade"; rainToday: "chuva hoje"; uv: "índice uv"; pressure: "pressão"
       visibility: "visibilidade"; next24: "próximas 24 horas"; now: "agora"; days: "3 dias"; today: "hoje"
@@ -120,6 +122,7 @@ widget "today" {
       }, phase, lower(phase)) + " · ${lit}% iluminada"
     }
     de {
+      cityMissing: "Stadt nicht gefunden"; cityNeeded: "Gib eine Stadt ein"
       refresh: "aktualisieren"; title: "wetter"; loading: "wetter…"; offline: "wetter offline"; city: "stadt · leer = auto"; here: "meinen standort nutzen"
       feels: "gefühlt"; humidity: "luftfeuchte"; rainToday: "regen heute"; uv: "uv-index"; pressure: "luftdruck"
       visibility: "sichtweite"; next24: "nächste 24 stunden"; now: "jetzt"; days: "3 tage"; today: "heute"
@@ -153,6 +156,7 @@ widget "today" {
       }, phase, lower(phase)) + " · ${lit}% beleuchtet"
     }
     zh {
+      cityMissing: "未找到城市"; cityNeeded: "请输入城市"
       refresh: "刷新"; title: "天气"; loading: "天气…"; offline: "获取不到天气"; city: "城市 · 留空 = 自动"; here: "使用我的位置"
       feels: "体感"; humidity: "湿度"; rainToday: "今日降水"; uv: "紫外线指数"; pressure: "气压"
       visibility: "能见度"; next24: "未来 24 小时"; now: "现在"; days: "未来 3 天"; today: "今天"
@@ -186,7 +190,7 @@ widget "today" {
       }, phase, lower(phase)) + " · 照亮 ${lit}%"
     }
     ru {
-      refresh: "обновить"; title: "погода"; loading: "погода…"; offline: "погода офлайн"; city: "город · пусто = авто"; here: "моё местоположение"
+      refresh: "обновить"; title: "погода"; loading: "погода…"; offline: "погода офлайн"; city: "город · пусто = авто"; here: "моё местоположение"; cityMissing: "Город не найден"; cityNeeded: "Укажи город для прогноза"
       feels: "по ощущению"; humidity: "влажность"; rainToday: "осадки сегодня"; uv: "уф-индекс"; pressure: "давление"
       visibility: "видимость"; next24: "ближайшие 24 часа"; now: "сейчас"; days: "3 дня"; today: "сегодня"
       sunrise: "восход"; sunset: "закат"; moon: "луна"; kmh: "км/ч"; yr: "открыть yr.no ↗"
@@ -219,6 +223,7 @@ widget "today" {
       }, phase, lower(phase)) + " · освещено ${lit}%"
     }
     ja {
+      cityMissing: "都市が見つかりません"; cityNeeded: "都市を入力してください"
       refresh: "更新"; title: "天気"; loading: "天気…"; offline: "天気を取得できません"; city: "都市 · 空欄 = 自動"; here: "現在地を使う"
       feels: "体感"; humidity: "湿度"; rainToday: "今日の降水"; uv: "UV 指数"; pressure: "気圧"
       visibility: "視程"; next24: "今後 24 時間"; now: "現在"; days: "3 日間"; today: "今日"
@@ -254,6 +259,7 @@ widget "today" {
       }, phase, lower(phase)) + " · 輝面率 ${lit}%"
     }
     uk {
+      cityMissing: "Місто не знайдено"; cityNeeded: "Вкажи місто для прогнозу"
       refresh: "оновити"; title: "погода"; loading: "погода…"; offline: "погода офлайн"; city: "місто · порожньо = авто"; here: "моє місцезнаходження"
       feels: "відчувається як"; humidity: "вологість"; rainToday: "опади сьогодні"; uv: "уф-індекс"; pressure: "тиск"
       visibility: "видимість"; next24: "найближчі 24 години"; now: "зараз"; days: "3 дні"; today: "сьогодні"
@@ -287,6 +293,7 @@ widget "today" {
       }, phase, lower(phase)) + " · освітлено ${lit}%"
     }
     fr {
+      cityMissing: "Ville introuvable"; cityNeeded: "Indique une ville"
       refresh: "actualiser"; title: "météo"; loading: "météo…"; offline: "météo hors ligne"; city: "ville · vide = auto"; here: "utiliser ma position"
       feels: "ressenti"; humidity: "humidité"; rainToday: "pluie aujourd’hui"; uv: "indice uv"; pressure: "pression"
       visibility: "visibilité"; next24: "prochaines 24 heures"; now: "maint."; days: "3 jours"; today: "auj."
@@ -320,6 +327,7 @@ widget "today" {
       }, phase, lower(phase)) + " · éclairée à ${lit} %"
     }
     tr {
+      cityMissing: "Şehir bulunamadı"; cityNeeded: "Hava durumu için şehir gir"
       refresh: "yenile"; title: "hava durumu"; loading: "hava durumu…"; offline: "hava durumu çevrimdışı"; city: "şehir · boş = otomatik"; here: "konumumu kullan"
       feels: "hissedilen"; humidity: "nem"; rainToday: "bugün yağış"; uv: "uv indeksi"; pressure: "basınç"
       visibility: "görüş"; next24: "önümüzdeki 24 saat"; now: "şimdi"; days: "3 gün"; today: "bugün"
@@ -354,6 +362,7 @@ widget "today" {
       }, phase, lower(phase)) + " · %${lit} aydınlık"
     }
     it {
+      cityMissing: "Città non trovata"; cityNeeded: "Inserisci una città"
       refresh: "aggiorna"; title: "meteo"; loading: "meteo…"; offline: "meteo offline"; city: "città · vuoto = auto"; here: "usa la mia posizione"
       feels: "percepita"; humidity: "umidità"; rainToday: "pioggia oggi"; uv: "indice uv"; pressure: "pressione"
       visibility: "visibilità"; next24: "prossime 24 ore"; now: "ora"; days: "3 giorni"; today: "oggi"
@@ -387,6 +396,7 @@ widget "today" {
       }, phase, lower(phase)) + " · illuminata al ${lit}%"
     }
     vi {
+      cityMissing: "Không tìm thấy thành phố"; cityNeeded: "Nhập thành phố để xem dự báo"
       refresh: "làm mới"; title: "thời tiết"; loading: "thời tiết…"; offline: "thời tiết ngoại tuyến"; city: "thành phố · trống = tự động"; here: "dùng vị trí của tôi"
       feels: "cảm giác"; humidity: "độ ẩm"; rainToday: "mưa hôm nay"; uv: "chỉ số uv"; pressure: "áp suất"
       visibility: "tầm nhìn"; next24: "24 giờ tới"; now: "bây giờ"; days: "3 ngày"; today: "hôm nay"
@@ -429,60 +439,87 @@ widget "today" {
   let low = tileHeight != null && tileHeight < 150
   let narrow = tileWidth != null && tileWidth < 170
   state city = "" persist
-  // Blank follows the country. A tap on the degree letter stores C or F.
   state unitChoice = "" persist
-  // The city, percent-encoded so "/", "?", "&" or "#" in it can't break the URL.
-  let q = enc(city)
-  // The phone's place, once a tap on the screen's "use my location" has allowed it.
+  state cityMatch = null persist
+  state lastMeteo = null persist
   source here = android.location
-  // A typed city wins; without one, the phone's place, to two decimals (about the kilometre a coarse fix knows), else
-  // "" for wttr's guess from the IP. Null while the source starts, so it doesn't fetch the IP's weather first.
-  let at = city != "" ? q : here == null ? null : here.available ? "${fixed(here.lat, 2)},${fixed(here.lon, 2)}" : ""
-  // One request. Icons and °F countries match omarchy's weather panel.
-  source forecast = http(at == null ? null : "https://wttr.in/${at}?format=j1") every 30m timeout 15s json status
-  state lastForecast = null persist
-  state lastPlace = null persist
-  state lastUpdate = null persist
-  on forecast first {
-    if value.ok && value.out.current_condition[0] != null {
-      lastForecast = value.out
-      lastPlace = at
-      lastUpdate = now
+  source cityLookup = http(city == "" ? null : "https://geocoding-api.open-meteo.com/v1/search?name=${enc(city)}&count=1&language=${enc(lang())}") every 24h timeout 10s json status
+  on cityLookup first {
+    if value.ok {
+      cityMatch = {query: city, place: value.out.results[0]}
     }
   }
-  let wx = at != null && lastPlace == at ? lastForecast : null
-  let failed = forecast != null && (!forecast.ok || forecast.out.current_condition[0] == null)
-  let weatherStatus = forecast == null ? str.loading : str.offline
-  let cur = wx.current_condition[0]
-  let day = wx.weather[0]
-  let area = wx.nearest_area[0]
-  let autoImperial = contains(["united states", "united states of america", "liberia", "myanmar", "burma"], lower(trim(area.country[0].value)))
-  let imperial = unitChoice == "F" ? true : unitChoice == "C" ? false : autoImperial
-  let unit = imperial ? "F" : "C"
-  let night = contains(cur.weatherIconUrl[0].value, "_night")
-  // Clear or partly cloudy gets a warm sun or a cool moon; everything else stays neutral.
-  let sky = contains(["113", "116"], cur.weatherCode) ? (night ? blue : yellow) : foreground
-  // wttr gives "07:16 AM"; show 24-hour time.
-  let sun = [day.astronomy[0].sunrise, day.astronomy[0].sunset]
-    .map(s => match(s ?? "", "(\\d+):(\\d+) (AM|PM)"))
-    .map(m => m == null ? "" : pad(int(num(m[0]) % 12 + (m[2] == "PM" ? 12 : 0)), 2, "0") + ":" + m[1])
-  let sunHours = sun.map(s => num(sub(s, 0, 2)))
-  let hourNow = num(fmtTime(now, "H"))
-  // The next 24 hours in wttr's 3-hour steps, from today's and tomorrow's forecasts.
-  let steps = flatten(range(2).map(i => (wx.weather[i].hourly ?? []).map(h => {
-    hr: i * 24 + num(h.time) / 100,
-    t: num(get(h, "temp" + unit)),
-    rain: num(h.chanceofrain),
-    code: h.weatherCode
-  }))).filter(s => s.hr > hourNow - 3).take(8)
-  // The three days' range, so their bars share one scale.
-  let lowest = min((wx.weather ?? []).map(d => num(get(d, "mintemp" + unit))))
-  let highest = max((wx.weather ?? []).map(d => num(get(d, "maxtemp" + unit))))
-  let moonIcons = {
-    "New Moon": "", "Waxing Crescent": "", "First Quarter": "", "Waxing Gibbous": "",
-    "Full Moon": "", "Waning Gibbous": "", "Last Quarter": "", "Waning Crescent": ""
+  // Preserve automatic weather by IP when Android has no location fix.
+  source byIp = http(city == "" && here != null && !here.available ? "https://ipwho.is/?fields=success,city,country,country_code,latitude,longitude" : null) every 6h timeout 10s json status
+  let place = city != "" ? (cityMatch.query == city ? cityMatch.place : null) :
+              here.available ? {name: str.here, latitude: here.lat, longitude: here.lon} :
+              byIp.out.success ? {name: byIp.out.city, country: byIp.out.country, country_code: byIp.out.country_code,
+                                  latitude: byIp.out.latitude, longitude: byIp.out.longitude} :
+              lastMeteo.city == "" ? lastMeteo.place : null
+  let locationKey = place.latitude == null || place.longitude == null ? null : "${fixed(place.latitude, 2)},${fixed(place.longitude, 2)}"
+  source forecast = http(locationKey == null ? null : "https://api.open-meteo.com/v1/forecast?latitude=${fixed(place.latitude, 2)}&longitude=${fixed(place.longitude, 2)}&current=temperature_2m,apparent_temperature,weather_code,is_day,relative_humidity_2m,pressure_msl,wind_speed_10m,wind_direction_10m&hourly=temperature_2m,weather_code,is_day,precipitation_probability,visibility&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max,precipitation_sum,uv_index_max,sunrise,sunset&timezone=auto&forecast_days=3") every 30m timeout 12s json status
+  on forecast first {
+    if value.ok && value.out.current.temperature_2m != null {
+      lastMeteo = {location: locationKey, data: value.out, at: now, place: place, city: city}
+    }
   }
-  let uv = num(cur.uvIndex)
+  let wx = locationKey != null && lastMeteo.location == locationKey ? lastMeteo.data : null
+  let failed = locationKey != null && forecast != null && (!forecast.ok || forecast.out.current.temperature_2m == null)
+  let cityMissing = city != "" && cityMatch.query == city && cityMatch.place == null
+  let placeLookup = city == "" ? byIp : cityLookup
+  let weatherStatus = cityMissing ? str.cityMissing :
+                      locationKey == null && placeLookup != null ? str.cityNeeded :
+                      failed ? str.offline : str.loading
+  let cur = wx.current
+  let imperial = unitChoice == "F" || (unitChoice == "" && contains(["US", "LR", "MM"], place.country_code))
+  let unit = imperial ? "F" : "C"
+  let tempFactor = imperial ? 1.8 : 1
+  let tempOffset = imperial ? 32 : 0
+  let temperature = round(cur.temperature_2m * tempFactor + tempOffset)
+  let feels = round(cur.apparent_temperature * tempFactor + tempOffset)
+  let placeName = place.name ?? city
+  // WMO weather interpretation codes mapped to the launcher's existing icons and translations.
+  let conditions = {
+    "0": ["113", "clear"], "1": ["116", "mainly clear"], "2": ["116", "partly cloudy"], "3": ["122", "overcast"],
+    "45": ["248", "fog"], "48": ["260", "freezing fog"],
+    "51": ["263", "light drizzle"], "53": ["266", "drizzle"], "55": ["266", "heavy drizzle"],
+    "56": ["281", "freezing drizzle"], "57": ["284", "heavy freezing drizzle"],
+    "61": ["296", "light rain"], "63": ["302", "rain"], "65": ["308", "heavy rain"],
+    "66": ["311", "freezing rain"], "67": ["314", "heavy freezing rain"],
+    "71": ["326", "light snow"], "73": ["332", "snow"], "75": ["338", "heavy snow"], "77": ["350", "snow grains"],
+    "80": ["353", "light showers"], "81": ["356", "showers"], "82": ["359", "heavy showers"],
+    "85": ["368", "light snow showers"], "86": ["371", "heavy snow showers"],
+    "95": ["389", "thunderstorm"], "96": ["392", "thunderstorm with hail"], "99": ["395", "heavy thunderstorm with hail"]
+  }
+  let curSky = get(conditions, str(cur.weather_code), [null, "—"])
+  let night = cur.is_day == 0
+  let sky = contains(["113", "116"], curSky[0]) ? (night ? blue : yellow) : foreground
+  let compass = ["N", "NNE", "NE", "ENE", "E", "ESE", "SE", "SSE", "S", "SSW", "SW", "WSW", "W", "WNW", "NW", "NNW"]
+  let wind = compass[round(cur.wind_direction_10m / 22.5) % 16]
+  let days = range(len(wx.daily.time)).map(i => {
+    date: wx.daily.time[i], code: conditions[str(wx.daily.weather_code[i])][0],
+    lo: round(wx.daily.temperature_2m_min[i] * tempFactor + tempOffset), hi: round(wx.daily.temperature_2m_max[i] * tempFactor + tempOffset),
+    rain: wx.daily.precipitation_probability_max[i], precipitation: wx.daily.precipitation_sum[i],
+    sunUp: sub(wx.daily.sunrise[i], 11, 16), sunDown: sub(wx.daily.sunset[i], 11, 16), uv: wx.daily.uv_index_max[i]
+  })
+  let day = days[0]
+  let hourNow = fmtTime(now, "yyyy-MM-dd'T'HH':00'", wx.timezone)
+  let hourIndex = max(0, indexOf(wx.hourly.time ?? [], hourNow))
+  let steps = range(len(wx.hourly.time)).drop(hourIndex).filter(i => (i - hourIndex) % 3 == 0).take(8).map(i => {
+    timestamp: wx.hourly.time[i], t: round(wx.hourly.temperature_2m[i] * tempFactor + tempOffset), rain: wx.hourly.precipitation_probability[i],
+    code: conditions[str(wx.hourly.weather_code[i])][0], night: wx.hourly.is_day[i] == 0
+  })
+  let lowest = min(days.map(d => d.lo))
+  let highest = max(days.map(d => d.hi))
+  let uv = day.uv
+  let visibility = wx.hourly.visibility[hourIndex]
+  // Approximate phase from the known new moon of January 2000 and the mean synodic month.
+  let lunarAge = (now - parseTime("2000-01-06T18:14:00Z")) / (29.53059 * 86400)
+  let moonIndex = round((lunarAge - floor(lunarAge)) * 8) % 8
+  let moonLit = round(50 * (1 - cos(lunarAge * 2 * pi)))
+  let moonName = ["New Moon", "Waxing Crescent", "First Quarter", "Waxing Gibbous",
+                  "Full Moon", "Waning Gibbous", "Last Quarter", "Waning Crescent"][moonIndex]
+  let moonIcon = ["", "", "", "", "", "", "", ""][moonIndex]
 
   onTap: screen()
 
@@ -541,35 +578,35 @@ widget "today" {
       Row {
         gap: 6
         align: bottom
-        Text { text: weatherIcon(cur.weatherCode, night); font: icon; fontSize: 32; color: sky; width: 26; padding: [0, 0, 0, 3] }
-        Text { text: "${get(cur, "temp_" + unit)}°"; fontSize: 28; color: failed ? muted : cyan; width: 68; maxLines: 1 }
+        Text { text: weatherIcon(curSky[0], night); font: icon; fontSize: 32; color: sky; width: 26; padding: [0, 0, 0, 3] }
+        Text { text: "${temperature}°"; fontSize: 28; color: failed ? muted : cyan; width: 68; maxLines: 1 }
         if !narrow {
           Column {
             gap: 0
             weight: 1
-            Text { text: str.sky(cur.weatherCode, cur.weatherDesc[0].value); style: small; align: end; maxLines: 1 }
-            Text { text: "↑${get(day, "maxtemp" + unit)}° ↓${get(day, "mintemp" + unit)}°"; style: small; color: muted; align: end; maxLines: 1; padding: [0, 0, 0, 5] }
+            Text { text: str.sky(curSky[0], curSky[1]); style: small; align: end; maxLines: 1 }
+            Text { text: "↑${day.hi}° ↓${day.lo}°"; style: small; color: muted; align: end; maxLines: 1; padding: [0, 0, 0, 5] }
           }
         }
       }
-      Text { text: "${str.feels} ${get(cur, "FeelsLike" + unit)}° · ${lower(area.areaName[0].value)}"; style: small; color: muted; maxLines: 1 }
+      Text { text: "${str.feels} ${feels}° · ${placeName}"; style: small; color: muted; maxLines: 1 }
       if !low {
         Spacer { weight: 1 }
         Spacer { height: 1; fill: width; background: alpha(muted, 0.25) }
         Spacer { height: 8 }
-        // The next two days (icon from the noon reading), then sunrise and sunset.
+        // The next two days, then sunrise and sunset.
         // Each named from its own date: just after midnight, the forecast from before it still starts yesterday.
         Row {
           gap: 4
           align: center
-          for d, i in drop(wx.weather, 1) key d.date {
+          for d, i in days.drop(1) key d.date {
             Column {
               gap: 0
               weight: 1
               align: center
               Text { text: lower(fmtTime(parseTime(d.date), "EEE")); style: label; color: muted; align: center }
-              Text { text: weatherIcon(d.hourly[4].weatherCode, false); font: icon; fontSize: 18; align: center }
-              Text { text: "${get(d, "maxtemp" + unit)}° ${get(d, "mintemp" + unit)}°"; style: small; align: center; maxLines: 1 }
+              Text { text: weatherIcon(d.code, false); font: icon; fontSize: 18; align: center }
+              Text { text: "${d.hi}° ${d.lo}°"; style: small; align: center; maxLines: 1 }
             }
           }
           if !narrow {
@@ -580,13 +617,13 @@ widget "today" {
                 gap: 4
                 align: center
                 Text { text: ""; font: icon; fontSize: 14; color: yellow; width: 20 }
-                Text { text: sun[0]; style: small; maxLines: 1; weight: 1 }
+                Text { text: day.sunUp; style: small; maxLines: 1; weight: 1 }
               }
               Row {
                 gap: 4
                 align: center
                 Text { text: ""; font: icon; fontSize: 14; color: orange; width: 20 }
-                Text { text: sun[1]; style: small; maxLines: 1; weight: 1 }
+                Text { text: day.sunDown; style: small; maxLines: 1; weight: 1 }
               }
             }
           }
@@ -604,16 +641,18 @@ widget "today" {
       placeholder: str.city
       onSubmit: { city = trim(value); refresh() }
     }
-    // Asked only from here: the tile never puts up Android's dialog on its own.
+    // The tile requests Android location permission only from this button.
     if here != null && !here.granted {
       Text { text: str.here; style: body; color: accent; maxLines: 1; padding: [0, 6]; onTap: location("request") }
     }
-    if failed {
+    if failed || cur == null {
       Column {
         gap: 4
-        Text { text: !forecast.ok && forecast.code > 0 ? "wttr.in · HTTP ${forecast.code}" : !forecast.ok ? forecast.err : "wttr.in · JSON"; style: small; maxLines: 2; color: muted }
-        if wx != null && lastUpdate != null {
-          Text { text: "${fmtTime(lastUpdate, "dd.MM HH:mm")}"; style: small; color: muted }
+        if failed {
+          Text { text: forecast.code > 0 ? "Open-Meteo · HTTP ${forecast.code}" : forecast.err; style: small; maxLines: 2; color: muted }
+          if wx != null && lastMeteo.at != null {
+            Text { text: "${fmtTime(lastMeteo.at, "dd.MM HH:mm")}"; style: small; color: muted }
+          }
         }
         Button { text: str.refresh; onTap: refresh() }
       }
@@ -629,22 +668,22 @@ widget "today" {
         Row {
           gap: 16
           align: center
-          Text { text: weatherIcon(cur.weatherCode, night); font: icon; fontSize: 64; color: sky; width: 80; align: center }
+          Text { text: weatherIcon(curSky[0], night); font: icon; fontSize: 64; color: sky; width: 80; align: center }
           Column {
             gap: 0
             weight: 1
             Text {
-              text: "${get(cur, "temp_" + unit)}°${unit}"
+              text: "${temperature}°${unit}"
               fontSize: 44
               color: cyan
               maxLines: 1
               onTap: unitChoice = unit == "C" ? "F" : "C"
             }
-            Text { text: str.sky(cur.weatherCode, cur.weatherDesc[0].value); style: body; maxLines: 2 }
+            Text { text: str.sky(curSky[0], curSky[1]); style: body; maxLines: 2 }
           }
         }
         Text {
-          text: "${str.feels} ${get(cur, "FeelsLike" + unit)}° · ↑${get(day, "maxtemp" + unit)}° ↓${get(day, "mintemp" + unit)}° · ${lower(area.areaName[0].value)}, ${lower(area.country[0].value)}"
+          text: "${str.feels} ${feels}° · ↑${day.hi}° ↓${day.lo}° · ${placeName}${place.country == null ? "" : ", " + place.country}"
           style: small
           color: muted
         }
@@ -652,12 +691,12 @@ widget "today" {
         Grid {
           columns: 2
           gap: 8
-          Stat { glyph: ""; label: str.wind(cur.winddir16Point); value: imperial ? "${cur.windspeedMiles} mph" : "${cur.windspeedKmph} ${str.kmh}"; tint: cyan }
-          Stat { glyph: ""; label: str.humidity; value: "${cur.humidity}%"; tint: blue }
-          Stat { glyph: ""; label: str.rainToday; value: "${max(day.hourly.map(h => num(h.chanceofrain)))}% · ${imperial ? cur.precipInches + " in" : cur.precipMM + " mm"}"; tint: blue }
+          Stat { glyph: ""; label: str.wind(wind); value: imperial ? "${round(cur.wind_speed_10m / 1.609344)} mph" : "${round(cur.wind_speed_10m)} ${str.kmh}"; tint: cyan }
+          Stat { glyph: ""; label: str.humidity; value: "${cur.relative_humidity_2m}%"; tint: blue }
+          Stat { glyph: ""; label: str.rainToday; value: "${day.rain}% · ${imperial ? fixed(day.precipitation / 25.4, 2) + " in" : day.precipitation + " mm"}"; tint: blue }
           Stat { glyph: ""; label: str.uv; value: "${uv} ${str.uvLevel(uv)}"; tint: uv >= 6 ? red : uv >= 3 ? yellow : green }
-          Stat { glyph: ""; label: str.pressure; value: imperial ? "${cur.pressureInches} inHg" : "${cur.pressure} hPa" }
-          Stat { glyph: ""; label: str.visibility; value: imperial ? "${cur.visibilityMiles} mi" : "${cur.visibility} km" }
+          Stat { glyph: ""; label: str.pressure; value: imperial ? "${fixed(cur.pressure_msl / 33.8639, 1)} inHg" : "${round(cur.pressure_msl)} hPa" }
+          Stat { glyph: ""; label: str.visibility; value: visibility == null ? "—" : imperial ? "${fixed(visibility / 1609.344, 1)} mi" : "${fixed(visibility / 1000, 1)} km" }
         }
         Rule { }
         // The next 24 hours: time, icon and rain chance per step, with the temperature curve under them.
@@ -666,13 +705,13 @@ widget "today" {
           gap: 4
           Row {
             gap: 0
-            for s in steps key s.hr {
+            for s, i in steps key s.timestamp {
               Column {
                 gap: 2
                 weight: 1
                 align: center
-                Text { text: s.hr == hourNow - hourNow % 3 ? str.now : pad(s.hr % 24, 2, "0"); style: label; color: muted; align: center }
-                Text { text: weatherIcon(s.code, s.hr % 24 < sunHours[0] || s.hr % 24 >= sunHours[1]); font: icon; fontSize: 20; align: center }
+                Text { text: i == 0 ? str.now : sub(s.timestamp, 11, 13); style: label; color: muted; align: center }
+                Text { text: weatherIcon(s.code, s.night); font: icon; fontSize: 20; align: center }
               }
             }
           }
@@ -698,15 +737,15 @@ widget "today" {
         Rule { }
         // Three days: icon, rain chance and the day's low to high on a shared scale.
         Text { text: str.days; style: label; color: accent }
-        for d, i in wx.weather key d.date {
-          let lo = num(get(d, "mintemp" + unit))
-          let hi = num(get(d, "maxtemp" + unit))
+        for d in days key d.date {
+          let lo = num(d.lo)
+          let hi = num(d.hi)
           Row {
             gap: 8
             align: center
-            Text { text: d.date == fmtTime(now, "yyyy-MM-dd") ? str.today : lower(fmtTime(parseTime(d.date), "EEE")); style: body; width: 64; maxLines: 1 }
-            Text { text: weatherIcon(d.hourly[4].weatherCode, false); font: icon; fontSize: 20; width: 26; align: center }
-            Text { text: "${max(d.hourly.map(h => num(h.chanceofrain)))}%"; style: small; color: blue; width: 40; align: end; maxLines: 1 }
+            Text { text: d.date == fmtTime(now, "yyyy-MM-dd", wx.timezone) ? str.today : lower(fmtTime(parseTime(d.date), "EEE")); style: body; width: 64; maxLines: 1 }
+            Text { text: weatherIcon(d.code, false); font: icon; fontSize: 20; width: 26; align: center }
+            Text { text: "${d.rain}%"; style: small; color: blue; width: 40; align: end; maxLines: 1 }
             Text { text: "${lo}°"; style: small; color: muted; width: 36; align: end; maxLines: 1 }
             Canvas {
               height: 6
@@ -721,22 +760,16 @@ widget "today" {
           }
         }
         Rule { }
-        // Sun and moon.
+        // Sun in the forecast location’s time zone and the current Moon phase.
         Row {
           gap: 8
-          Stat { glyph: ""; label: str.sunrise; value: sun[0]; tint: yellow; weight: 1 }
-          Stat { glyph: ""; label: str.sunset; value: sun[1]; tint: orange; weight: 1 }
+          Stat { glyph: ""; label: str.sunrise; value: day.sunUp; tint: yellow; weight: 1 }
+          Stat { glyph: ""; label: str.sunset; value: day.sunDown; tint: orange; weight: 1 }
         }
-        Stat {
-          glyph: get(moonIcons, day.astronomy[0].moon_phase, "")
-          label: str.moon
-          value: str.phase(day.astronomy[0].moon_phase, day.astronomy[0].moon_illumination)
-          tint: foreground
-        }
-        // yr.no (Norwegian Meteorological Institute): ad-free and worldwide, opened at wttr's coordinates.
+        Stat { glyph: moonIcon; label: str.moon; value: str.phase(moonName, moonLit) }
         Row {
           justify: end
-          Button { text: str.yr; color: muted; onTap: url("https://www.yr.no/en/forecast/daily-table/${area.latitude},${area.longitude}") }
+          Button { text: "Open-Meteo ↗"; color: muted; onTap: url("https://open-meteo.com/") }
         }
       }
     }

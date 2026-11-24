@@ -27,13 +27,15 @@ work without Launcher3’s Quickstep, root, or Shizuku.
   unsaved work.
 - **OWL dashboard.** Page 1 has a one-cell Linux session switch. The tablet
   monitor overlays network receive and send on one scale and plots up to
-  three hours of recorded battery charge. It also shows CPU, RAM, power, and
+  three hours of recorded battery charge with a remaining-time estimate based
+  on recent discharge. It also shows CPU, RAM, power, and
   tablet thermal status. Tap to inspect the graphs and edit live
   OWL files. The one-cell availability tile checks devices and web services once
   a minute while its page or a neighbor is active. Tap to add, edit or delete
   IP addresses, domain names and HTTPS URLs.
-  The calendar reads Android events when allowed. The weather tile keeps its
-  last forecast when updating fails and shows the failure in its details.
+  The calendar reads Android events when allowed. The weather tile uses
+  Open-Meteo, keeps its last forecast when updating fails, and shows the
+  failure in its details.
 - **Lock screen wallpaper.** Style can apply the selected Omarchy background
   to Android’s lock screen separately.
 

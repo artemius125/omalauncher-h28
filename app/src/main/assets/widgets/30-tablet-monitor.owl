@@ -7,22 +7,28 @@ widget "tablet-monitor" {
 
   strings {
     en {
-      title: "tablet history"; memory: "RAM"; rx: "↓ RX"; tx: "↑ TX"; network: "network"; battery: "battery"; hours: "−3 h"; twoHours: "−2 h"; oneHour: "−1 h"; now: "now"; temp: "CPU °C"; heat: "heat"
+      title: "tablet history"; memory: "RAM"; rx: "↓ RX"; tx: "↑ TX"; network: "network"; now: "now"; temp: "CPU °C"; heat: "heat"
       draw: "draw"; charge: "charge"; power: "battery W"; files: "OWL files"
       cpuScope: "CPU · launcher and its Linux processes"; noCpu: "CPU history needs Linux running"
       noTemp: "The tablet exposes thermal status to OMA. CPU degrees are unavailable."
       stages: ["normal", "light", "moderate", "severe", "critical", "emergency", "shutdown"]
       batteryWindow: "battery · last 3 hours"; batteryWaiting: "History is collecting"; percentagePoints: "pp"
+      etaPending: "Estimating…"; etaCharging: "Charging"; etaPlugged: "Plugged in"
+      eta: m => m < 60 ? "≈ ${m} min" : m % 60 == 0 ? "≈ ${floor(m / 60)} h" : "≈ ${floor(m / 60)} h ${m % 60} min"
+      etaNote: "Estimated time remaining at the recent battery drain rate."
       samples: n => "${n} samples · every 5 s while monitoring"; range: "range"; mean: "average"
       wattsNote: "Battery power for the whole tablet."
     }
     ru {
-      title: "история планшета"; memory: "ОЗУ"; rx: "↓ приём"; tx: "↑ отправка"; network: "сеть"; battery: "батарея"; hours: "−3 ч"; twoHours: "−2 ч"; oneHour: "−1 ч"; now: "сейчас"; temp: "ЦП °C"; heat: "нагрев"
+      title: "история планшета"; memory: "ОЗУ"; rx: "↓ приём"; tx: "↑ отправка"; network: "сеть"; now: "сейчас"; temp: "ЦП °C"; heat: "нагрев"
       draw: "расход"; charge: "заряд"; power: "питание"; files: "файлы OWL"
       cpuScope: "ЦП · лаунчер и его Linux-процессы"; noCpu: "Для истории ЦП запусти Linux"
       noTemp: "Планшет передаёт OMA уровень нагрева. Градусы ЦП недоступны."
       stages: ["норма", "лёгкий", "средний", "сильный", "критический", "авария", "выключение"]
       batteryWindow: "батарея · последние 3 часа"; batteryWaiting: "История накапливается"; percentagePoints: "п. п."
+      etaPending: "Оценка…"; etaCharging: "Заряжается"; etaPlugged: "От сети"
+      eta: m => m < 60 ? "≈ ${m} мин" : m % 60 == 0 ? "≈ ${floor(m / 60)} ч" : "≈ ${floor(m / 60)} ч ${m % 60} мин"
+      etaNote: "Остаток времени при недавнем темпе разрядки."
       samples: n => "${n} замеров · раз в 5 с во время мониторинга"; range: "диапазон"; mean: "среднее"
       wattsNote: "Мощность на аккумуляторе всего планшета."
     }
@@ -87,6 +93,19 @@ widget "tablet-monitor" {
   let heatHistory = samples.map(s => s[6])
   let chargeInWindow = chargeHistory.filter(p => p[0] >= sinceCharge)
   let batteryDelta = len(chargeInWindow) < 2 ? null : last(chargeInWindow)[1] - first(chargeInWindow)[1]
+  // Compare observed drops since the last charge. Skip unobserved gaps across launcher restarts.
+  let lastCharging = last(chargeHistory.filter(p => p[2]))[0] ?? 0
+  let drops = range(len(chargeHistory)).drop(1)
+    .map(i => {before: chargeHistory[i - 1], after: chargeHistory[i]})
+    .filter(s => s.before[0] >= sinceCharge && s.before[0] > lastCharging && !s.after[3] &&
+                 s.after[0] > s.before[0] && s.after[1] < s.before[1])
+  let dischargeSeconds = sum(drops.map(s => s.after[0] - s.before[0]))
+  let dischargePercent = sum(drops.map(s => s.before[1] - s.after[1]))
+  let rawMinutes = dischargeSeconds >= 900 && dischargePercent >= 2 ? battery.level * dischargeSeconds / (60 * dischargePercent) : null
+  let etaMinutes = battery.level == 0 ? 0 : rawMinutes == null || rawMinutes > 4320 ? null : max(5, 5 * round(rawMinutes / 5))
+  let etaText = battery.charging ? str.etaCharging : battery.plugged != null ? str.etaPlugged :
+                etaMinutes == null ? str.etaPending : str.eta(etaMinutes)
+  let etaColor = battery == null ? muted : battery.level >= 45 ? green : battery.level >= 20 ? yellow : red
   let powerHistory = samples.map(s => s[5])
   let dense = (tileWidth ?? 250) < 195 || (tileHeight ?? 240) < 200
   let gapSize = dense ? 3 : 5
@@ -188,9 +207,15 @@ widget "tablet-monitor" {
         fill: width
         weight: detail ? 0 : 1
         height: detail ? 130 : null
-        for i in range(3) {
-          let y = (i + 1) * height / 4
-          line(0, y, width, y, stroke: alpha(muted, 0.23))
+        for i in range(1, 4) {
+          let y = 2 + (height - 4) * i / 4
+          line(2, y, width - 2, y, stroke: alpha(foreground, 0.25), width: 1)
+        }
+        line(2, height - 2, width - 2, height - 2, stroke: alpha(foreground, 0.38), width: 1)
+        for i in range(4) {
+          let x = 2 + (width - 4) * i / 3
+          line(x, 2, x, height - 2, stroke: alpha(foreground, 0.28), width: 1)
+          line(x, height - 6, x, height - 1, stroke: alpha(foreground, 0.68), width: 1)
         }
         for i in range(len(chargeHistory)) {
           let p = chargeHistory[i]
@@ -211,19 +236,19 @@ widget "tablet-monitor" {
         Canvas {
           fill: width
           height: 14
-          text(str.hours, 0, height / 2, size: 11, align: start, color: muted)
-          text(str.twoHours, width / 3, height / 2, size: 11, align: center, color: muted)
-          text(str.oneHour, width * 2 / 3, height / 2, size: 11, align: center, color: muted)
-          text(str.now, width, height / 2, size: 11, align: end, color: muted)
-        }
-      } else {
-        Row {
-          gap: 3
-          Text { text: str.hours; weight: 1; color: muted; fontSize: 9; maxLines: 1 }
-          Text { text: str.now; color: muted; fontSize: 9; maxLines: 1 }
+          if batteryTime > 0 {
+            text(fmtTime(sinceCharge, "HH:mm"), 2, height / 2, size: 11, align: start, color: foreground)
+            text(fmtTime(sinceCharge + 3600, "HH:mm"), 2 + (width - 4) / 3, height / 2, size: 11, align: center, color: foreground)
+            text(fmtTime(sinceCharge + 7200, "HH:mm"), 2 + (width - 4) * 2 / 3, height / 2, size: 11, align: center, color: foreground)
+            text(str.now, width - 2, height / 2, size: 11, align: end, color: foreground)
+          }
         }
       }
+      Text { text: etaText; color: etaColor; bold: true; fontSize: detail ? 16 : dense ? 9 : 11; maxLines: 1 }
       if detail {
+        if !battery.charging && battery.plugged == null && etaMinutes != null {
+          Text { text: str.etaNote; style: small; color: muted }
+        }
         Row {
           Text { text: battery.charging ? str.charge : str.draw; color: tint; weight: 1; style: small }
           Text { text: batteryDelta == null ? str.batteryWaiting : (batteryDelta > 0 ? "+" : "") + batteryDelta + " " + str.percentagePoints; color: muted; style: small }
