@@ -3,6 +3,14 @@
 The MIT license in [LICENSE](LICENSE) covers Omalauncher's own code and artwork.
 It does not cover the files below, which stay under their owners' terms.
 
+## Community widgets
+
+[Widget Drain](app/src/main/assets/widgets/market-rwdpena-widget-drain.owl)
+is adapted from [rwdpena's Widget Drain 1.9](https://github.com/SimonSchubert/omarchy-widgets/tree/main/widgets/rwdpena/widget-drain)
+in the Omarchy widget store. The fork adapts the tile to small sizes.
+The store's MIT license has the same copyright notice and terms as
+[LICENSE](LICENSE), copyright © 2026 Simon Schubert and contributors.
+
 ## Coding agent logos
 
 `art/icons/agent-*.svg`, and the PNGs rendered from them in

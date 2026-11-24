@@ -50,6 +50,19 @@ with Android 11, using Material Files and a Linux Terminal window.
 [Build this fork from source](#building). The Google Play listing below is for
 the original Omalauncher.
 
+### Move the dashboard to another device
+
+Build and install this fork. The APK includes the dashboard's
+[OWL files](app/src/main/assets/widgets), including the compact Widget Drain
+tile. On first launch, OMA adds the bundled widgets. Widget Drain needs a
+running Arch Linux session and Python. Install Python from the tile if OMA
+shows it as a missing dependency.
+
+To reuse the H28 placement, save [the H28 layout](configs/h28/layout.toml) as
+`~/.config/omalauncher/home/layout.toml` in OMA's Linux home. Back up the
+existing layout before replacing it. The preset contains widget positions and
+sizes. Set your own device addresses and weather location on the new device.
+
 <a href="https://play.google.com/store/apps/details?id=dev.omalauncher"><img src="https://play.google.com/intl/en_us/badges/static/images/badges/en_badge_web_generic.png" alt="Get the original Omalauncher on Google Play" height="80"></a>
 
 ![The home screen in twelve Omarchy themes, each with different widgets](art/collage.png)
